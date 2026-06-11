@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Lock, Globe, Users, MapPin, X } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { USERS } from '../../data/mockData'
+import { POSTNUMMER } from '../../data/postnummer'
 import Avatar from '../../components/ui/Avatar'
 import Button from '../../components/ui/Button'
 import Header from '../../components/layout/Header'
@@ -40,6 +41,7 @@ export default function CreateActivity() {
   const [travelCost, setTravelCost] = useState(30)
   const [allowSuggestions, setAllowSuggestions] = useState(true)
   const [invitedFriends, setInvitedFriends] = useState<string[]>([])
+  const [showLocationPanel, setShowLocationPanel] = useState(false)
 
   const toggleFriend = (uid: string) => {
     setInvitedFriends((prev) =>
@@ -150,20 +152,57 @@ export default function CreateActivity() {
             <div>
               <label className="text-sm font-medium text-gray-600 mb-2 block">📍 Adresse</label>
               <div className="relative">
-                <MapPin size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-400 pointer-events-none" />
+                <MapPin size={15} className="absolute left-4 top-3.5 text-pink-400 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="F.eks. Tusenfryd, Vinterbro"
+                  placeholder="Postnummer eller poststed..."
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={(e) => { setLocation(e.target.value); setShowLocationPanel(true) }}
+                  onFocus={() => setShowLocationPanel(true)}
+                  onBlur={() => setTimeout(() => setShowLocationPanel(false), 150)}
                   className="w-full border-2 border-gray-100 rounded-2xl pl-10 pr-10 py-3 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
                 />
                 {location && (
-                  <button type="button" onClick={() => setLocation('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => setLocation('')} className="absolute right-3 top-1/2 -translate-y-1/2">
                     <X size={15} className="text-gray-400" />
                   </button>
                 )}
               </div>
+              {/* Autocomplete */}
+              {showLocationPanel && location.length > 0 && (() => {
+                const q = location.trim().toLowerCase()
+                const hits = POSTNUMMER.filter(
+                  (p) => p.nr.startsWith(q) || p.sted.toLowerCase().includes(q) || p.kommune.toLowerCase().includes(q)
+                ).slice(0, 6)
+                // Dedupliser på sted+kommune
+                const seen = new Set<string>()
+                const unique = hits.filter((p) => {
+                  const key = `${p.sted}-${p.kommune}`
+                  if (seen.has(key)) return false
+                  seen.add(key)
+                  return true
+                })
+                if (unique.length === 0) return null
+                return (
+                  <div className="mt-1 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden">
+                    {unique.map((p) => (
+                      <button
+                        key={`${p.nr}-${p.sted}`}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => { setLocation(`${p.sted}, ${p.kommune}`); setShowLocationPanel(false) }}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-pink-50 transition-colors border-b border-gray-50 last:border-0 text-left"
+                      >
+                        <MapPin size={13} className="text-pink-400 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{p.sted}</p>
+                          <p className="text-xs text-gray-400">{p.kommune} · {p.nr}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )
+              })()}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
