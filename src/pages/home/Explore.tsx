@@ -1,25 +1,46 @@
-// ─── Utforsk-side med lokasjonssøk ───────────────────────────────────────────
+// ─── Utforsk-side med land → by-velger ───────────────────────────────────────
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, MapPin, X, ChevronDown } from 'lucide-react'
+import { Search, MapPin, X, ChevronDown, ChevronLeft } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { USERS } from '../../data/mockData'
 import BottomNav from '../../components/layout/BottomNav'
 
-const LOCATIONS = [
-  // Norge
-  'Oslo', 'Bergen', 'Trondheim', 'Stavanger', 'Tromsø',
-  'Kristiansand', 'Drammen', 'Fredrikstad', 'Sandnes', 'Bodø',
-  'Ålesund', 'Haugesund', 'Tønsberg', 'Moss', 'Gjøvik',
-  'Lillehammer', 'Molde', 'Harstad', 'Steinkjer', 'Arendal',
-
-  // Europa
-  'København', 'Stockholm', 'Gøteborg', 'Malmø',
-  'Helsinki', 'Amsterdam', 'Berlin', 'Paris', 'London',
-  'Roma', 'Madrid', 'Barcelona', 'Lisboa', 'Wien',
-  'Praha', 'Budapest', 'Warszawa', 'Dublin', 'Zürich',
-  'Brussel', 'Hamburg', 'München', 'Aten', 'Reykjavik',
-]
+const COUNTRIES: Record<string, { flag: string; cities: string[] }> = {
+  Norge: {
+    flag: '🇳🇴',
+    cities: [
+      'Oslo', 'Bergen', 'Trondheim', 'Stavanger', 'Tromsø',
+      'Kristiansand', 'Drammen', 'Fredrikstad', 'Bodø', 'Ålesund',
+      'Haugesund', 'Tønsberg', 'Lillehammer', 'Molde', 'Arendal',
+    ],
+  },
+  Sverige: {
+    flag: '🇸🇪',
+    cities: [
+      'Stockholm', 'Gøteborg', 'Malmø', 'Uppsala', 'Västerås',
+      'Örebro', 'Linköping', 'Helsingborg', 'Jönköping', 'Umeå',
+    ],
+  },
+  Danmark: {
+    flag: '🇩🇰',
+    cities: [
+      'København', 'Aarhus', 'Odense', 'Aalborg', 'Esbjerg',
+      'Randers', 'Kolding', 'Horsens', 'Vejle', 'Roskilde',
+    ],
+  },
+  Finland: {
+    flag: '🇫🇮',
+    cities: [
+      'Helsinki', 'Espoo', 'Tampere', 'Vantaa', 'Oulu',
+      'Turku', 'Jyväskylä', 'Lahti', 'Kuopio', 'Pori',
+    ],
+  },
+  Island: {
+    flag: '🇮🇸',
+    cities: ['Reykjavik', 'Kópavogur', 'Hafnarfjörður', 'Akureyri'],
+  },
+}
 
 export default function Explore() {
   const navigate = useNavigate()
@@ -28,12 +49,9 @@ export default function Explore() {
 
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState(currentUser.area)
-  const [locationInput, setLocationInput] = useState('')
-  const [showLocationSearch, setShowLocationSearch] = useState(false)
-
-  const suggestions = LOCATIONS.filter((a) =>
-    locationInput.length === 0 || a.toLowerCase().includes(locationInput.toLowerCase())
-  )
+  const [showPanel, setShowPanel] = useState(false)
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
+  const [citySearch, setCitySearch] = useState('')
 
   const openActivities = activities.filter(
     (a) =>
@@ -45,11 +63,16 @@ export default function Explore() {
         a.location.toLowerCase().includes(query.toLowerCase()))
   )
 
-  const selectLocation = (area: string) => {
-    setLocation(area)
-    setLocationInput('')
-    setShowLocationSearch(false)
+  const selectCity = (city: string, country: string) => {
+    setLocation(`${city}, ${country}`)
+    setShowPanel(false)
+    setSelectedCountry(null)
+    setCitySearch('')
   }
+
+  const cities = selectedCountry ? COUNTRIES[selectedCountry].cities.filter((c) =>
+    citySearch === '' || c.toLowerCase().includes(citySearch.toLowerCase())
+  ) : []
 
   return (
     <div className="min-h-dvh bg-gray-50 pb-24">
@@ -59,51 +82,80 @@ export default function Explore() {
 
         {/* Lokasjon-velger */}
         <button
-          onClick={() => setShowLocationSearch(!showLocationSearch)}
+          onClick={() => { setShowPanel(!showPanel); setSelectedCountry(null); setCitySearch('') }}
           className="w-full flex items-center gap-2 bg-pink-50 border border-pink-100 rounded-2xl px-4 py-2.5"
         >
           <MapPin size={15} className="text-pink-500 flex-shrink-0" />
           <span className="flex-1 text-sm font-medium text-gray-700 text-left truncate">{location}</span>
-          <ChevronDown
-            size={15}
-            className={`text-gray-400 transition-transform flex-shrink-0 ${showLocationSearch ? 'rotate-180' : ''}`}
-          />
+          <ChevronDown size={15} className={`text-gray-400 transition-transform flex-shrink-0 ${showPanel ? 'rotate-180' : ''}`} />
         </button>
 
-        {/* Lokasjonssøk-panel */}
-        {showLocationSearch && (
+        {/* Panel */}
+        {showPanel && (
           <div className="bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden">
-            <div className="relative p-2 border-b border-gray-50">
-              <Search size={15} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                autoFocus
-                type="text"
-                placeholder="Søk etter bydel eller sted..."
-                value={locationInput}
-                onChange={(e) => setLocationInput(e.target.value)}
-                className="w-full bg-gray-50 rounded-xl pl-8 pr-8 py-2.5 text-sm focus:outline-none"
-              />
-              {locationInput && (
-                <button onClick={() => setLocationInput('')} className="absolute right-4 top-1/2 -translate-y-1/2">
-                  <X size={14} className="text-gray-400" />
-                </button>
-              )}
-            </div>
-            <div className="max-h-52 overflow-y-auto">
-              {suggestions.map((area) => (
-                <button
-                  key={area}
-                  onClick={() => selectLocation(area)}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-pink-50 transition-colors border-b border-gray-50 last:border-0"
-                >
-                  <MapPin size={14} className="text-pink-400 flex-shrink-0" />
-                  <span className="text-sm text-gray-700">{area}</span>
-                  {location === area && (
-                    <span className="ml-auto text-xs text-pink-500 font-medium">Valgt</span>
+
+            {/* Steg 1: velg land */}
+            {!selectedCountry && (
+              <>
+                <p className="text-xs text-gray-400 font-medium px-4 pt-3 pb-2">Velg land</p>
+                {Object.entries(COUNTRIES).map(([country, { flag }]) => (
+                  <button
+                    key={country}
+                    onClick={() => setSelectedCountry(country)}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-pink-50 transition-colors border-t border-gray-50"
+                  >
+                    <span className="text-2xl">{flag}</span>
+                    <span className="text-sm font-medium text-gray-800">{country}</span>
+                    <ChevronDown size={14} className="ml-auto text-gray-300 -rotate-90" />
+                  </button>
+                ))}
+              </>
+            )}
+
+            {/* Steg 2: velg by */}
+            {selectedCountry && (
+              <>
+                <div className="flex items-center gap-2 px-3 pt-3 pb-2 border-b border-gray-50">
+                  <button onClick={() => { setSelectedCountry(null); setCitySearch('') }} className="p-1 text-gray-400">
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="text-sm font-semibold text-gray-800">
+                    {COUNTRIES[selectedCountry].flag} {selectedCountry}
+                  </span>
+                </div>
+                <div className="relative p-2 border-b border-gray-50">
+                  <Search size={14} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Søk etter by..."
+                    value={citySearch}
+                    onChange={(e) => setCitySearch(e.target.value)}
+                    className="w-full bg-gray-50 rounded-xl pl-8 pr-8 py-2.5 text-sm focus:outline-none"
+                  />
+                  {citySearch && (
+                    <button onClick={() => setCitySearch('')} className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <X size={13} className="text-gray-400" />
+                    </button>
                   )}
-                </button>
-              ))}
-            </div>
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  {cities.map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => selectCity(city, selectedCountry)}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-pink-50 transition-colors border-b border-gray-50 last:border-0"
+                    >
+                      <MapPin size={13} className="text-pink-400 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{city}</span>
+                      {location === `${city}, ${selectedCountry}` && (
+                        <span className="ml-auto text-xs text-pink-500 font-medium">Valgt</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -126,7 +178,6 @@ export default function Explore() {
       </div>
 
       <div className="px-4 py-4 space-y-3">
-        {/* Aktiv lokasjon-tag */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400">Viser aktiviteter nær</span>
           <span className="text-xs bg-pink-100 text-pink-600 font-medium px-2 py-0.5 rounded-full">
