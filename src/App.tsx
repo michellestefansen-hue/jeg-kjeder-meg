@@ -77,7 +77,18 @@ export default function App() {
               photoUrl: profile.photo_url,
               vippsNumber: profile.vipps_number,
             })
-          } catch { logout() }
+          } catch {
+            // Profil finnes ikke — logg inn med minimal info
+            login({
+              id: session.user.id,
+              name: session.user.email?.split('@')[0] ?? 'Bruker',
+              username: session.user.email?.split('@')[0] ?? 'bruker',
+              age: 14,
+              area: 'Norge',
+              avatar: (session.user.email?.[0] ?? 'B').toUpperCase(),
+              friends: [],
+            })
+          }
         }
         setAuthReady(true)
       })
@@ -102,7 +113,17 @@ export default function App() {
             photoUrl: profile.photo_url,
             vippsNumber: profile.vipps_number,
           })
-        } catch (e) { console.error('Profil-feil:', e) }
+        } catch {
+          login({
+            id: session.user.id,
+            name: session.user.email?.split('@')[0] ?? 'Bruker',
+            username: session.user.email?.split('@')[0] ?? 'bruker',
+            age: 14,
+            area: 'Norge',
+            avatar: (session.user.email?.[0] ?? 'B').toUpperCase(),
+            friends: [],
+          })
+        }
       }
       if (event === 'SIGNED_OUT') logout()
     })
