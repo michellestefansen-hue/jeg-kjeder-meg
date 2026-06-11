@@ -13,10 +13,17 @@ export default function GroupChat() {
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  // Simulert skriveindikator og sett-av
+  const [typingUsers, setTypingUsers] = useState<string[]>([])
+  const [seenBy, setSeenBy] = useState<string[]>([])
+  const [seenMsgId, setSeenMsgId] = useState<string | null>(null)
+
   const group = groupChats[groupId!]
 
   useEffect(() => { markGroupRead(groupId!) }, [groupId])
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [group?.messages.length])
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [group?.messages.length, typingUsers.length])
 
   if (!group || !currentUser) return null
 
@@ -27,6 +34,30 @@ export default function GroupChat() {
   }
 
   const members = group.members.map((id) => USERS.find((u) => u.id === id)).filter(Boolean) as typeof USERS
+  const otherMembers = members.filter((u) => u.id !== currentUser?.id)
+
+  // Simuler skriveindikator og sett-av etter at brukeren sender melding
+  useEffect(() => {
+    if (!group || !currentUser) return
+    const myMessages = group.messages.filter((m) => m.from === currentUser.id)
+    if (myMessages.length === 0) return
+    const lastMy = myMessages[myMessages.length - 1]
+    if (seenMsgId === lastMy.id) return
+
+    // Pick 1-2 tilfeldige andre medlemmer som "skriver"
+    const typers = otherMembers.slice(0, 1 + Math.floor(Math.random() * Math.min(2, otherMembers.length)))
+    const delay = 800 + Math.random() * 800
+
+    const typingTimer = setTimeout(() => setTypingUsers(typers.map((u) => u.id)), delay)
+    const seenDelay = delay + 1200 + Math.random() * 1500
+    const seenTimer = setTimeout(() => {
+      setTypingUsers([])
+      setSeenBy(typers.map((u) => u.id))
+      setSeenMsgId(lastMy.id)
+    }, seenDelay)
+
+    return () => { clearTimeout(typingTimer); clearTimeout(seenTimer) }
+  }, [group?.messages.length])
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -78,30 +109,67 @@ export default function GroupChat() {
           </div>
         )}
 
-        {group.messages.map((msg) => {
+        {group.messages.map((msg, idx) => {
           const isMe = msg.from === currentUser.id
           const sender = USERS.find((u) => u.id === msg.from)
           const senderIdx = USERS.findIndex((u) => u.id === msg.from)
+          const isLast = idx === group.messages.length - 1
+          const showSeen = isMe && isLast && seenBy.length > 0 && seenMsgId === msg.id
 
           return (
-            <div key={msg.id} className={`flex gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
-              {!isMe && sender && <Avatar initial={sender.avatar} size="xs" index={senderIdx} />}
-              <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                {!isMe && sender && (
-                  <span className="text-xs text-gray-400 mb-0.5 ml-1">{sender.name}</span>
-                )}
-                <div className={`px-4 py-2.5 rounded-2xl text-sm ${
-                  isMe
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-tr-sm'
-                    : 'bg-white text-gray-800 shadow-sm rounded-tl-sm'
-                }`}>
-                  {msg.text}
+            <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+              <div className={`flex gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
+                {!isMe && sender && <Avatar initial={sender.avatar} size="xs" index={senderIdx} />}
+                <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                  {!isMe && sender && (
+                    <span className="text-xs text-gray-400 mb-0.5 ml-1">{sender.name}</span>
+                  )}
+                  <div className={`px-4 py-2.5 rounded-2xl text-sm ${
+                    isMe
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-tr-sm'
+                      : 'bg-white text-gray-800 shadow-sm rounded-tl-sm'
+                  }`}>
+                    {msg.text}
+                  </div>
+                  <span className="text-[10px] text-gray-400 mt-0.5 mx-1">{msg.time}</span>
                 </div>
-                <span className="text-[10px] text-gray-400 mt-0.5 mx-1">{msg.time}</span>
               </div>
+              {/* Sett av i gruppe */}
+              {showSeen && (
+                <div className="flex items-center gap-1 mt-0.5 mr-1">
+                  {seenBy.map((uid) => {
+                    const u = USERS.find((x) => x.id === uid)
+                    const i = USERS.findIndex((x) => x.id === uid)
+                    return u ? <Avatar key={uid} initial={u.avatar} size="xs" index={i} /> : null
+                  })}
+                  <span className="text-[10px] text-gray-400">Sett</span>
+                </div>
+              )}
             </div>
           )
         })}
+
+        {/* Skriveindikator i gruppe */}
+        {typingUsers.length > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="flex -space-x-1">
+              {typingUsers.map((uid) => {
+                const u = USERS.find((x) => x.id === uid)
+                const i = USERS.findIndex((x) => x.id === uid)
+                return u ? <Avatar key={uid} initial={u.avatar} size="xs" index={i} /> : null
+              })}
+            </div>
+            <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex gap-1 items-center">
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <span className="text-xs text-gray-400">
+              {typingUsers.map((uid) => USERS.find((u) => u.id === uid)?.name).join(' og ')} skriver…
+            </span>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 

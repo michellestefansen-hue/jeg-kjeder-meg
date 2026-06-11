@@ -1,4 +1,4 @@
-// ─── Direktechat med en bruker ────────────────────────────────────────────────
+// ─── Direktechat med lest-kvittering og skriveindikator ──────────────────────
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Send, UserCircle } from 'lucide-react'
@@ -13,17 +13,40 @@ export default function DirectChat() {
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  // Simulert tilstand
+  const [otherTyping, setOtherTyping] = useState(false)
+  const [seenMsgId, setSeenMsgId] = useState<string | null>(null)
+
   const other = USERS.find((u) => u.id === userId)
   const otherIndex = USERS.findIndex((u) => u.id === userId)
   const chat = directChats[userId!] || { messages: [], unread: 0 }
   const isBlocked = blockedUsers.includes(userId ?? '')
 
-  useEffect(() => {
-    markRead(userId!)
-  }, [userId])
+  useEffect(() => { markRead(userId!) }, [userId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chat.messages.length, otherTyping])
+
+  // Simuler "sett" og skriveindikator etter at brukeren sender melding
+  useEffect(() => {
+    const myMessages = chat.messages.filter((m) => m.from === currentUser?.id)
+    if (myMessages.length === 0) return
+    const lastMy = myMessages[myMessages.length - 1]
+    if (seenMsgId === lastMy.id) return // allerede markert
+
+    // Vis skriveindikator etter 1-2 sek
+    const typingDelay = 1000 + Math.random() * 1000
+    const typingTimer = setTimeout(() => setOtherTyping(true), typingDelay)
+
+    // Skjul skriveindikator og vis "sett" etter 2-4 sek
+    const seenDelay = typingDelay + 1500 + Math.random() * 2000
+    const seenTimer = setTimeout(() => {
+      setOtherTyping(false)
+      setSeenMsgId(lastMy.id)
+    }, seenDelay)
+
+    return () => { clearTimeout(typingTimer); clearTimeout(seenTimer) }
   }, [chat.messages.length])
 
   if (!other || !currentUser) return null
@@ -36,16 +59,24 @@ export default function DirectChat() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      {/* Header med profil-info */}
+      {/* Header */}
       <div className="bg-white px-4 pt-12 pb-3 sticky top-0 z-40 shadow-sm flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-gray-500 p-1 -ml-1">
-          ‹
-        </button>
+        <button onClick={() => navigate(-1)} className="text-gray-500 text-2xl p-1 -ml-1 leading-none">‹</button>
         <button onClick={() => navigate(`/user/${other.id}`)} className="flex items-center gap-3 flex-1">
-          <Avatar initial={other.avatar} size="sm" index={otherIndex} />
+          <div className="relative">
+            <Avatar initial={other.avatar} size="sm" index={otherIndex} />
+            {/* Online-prikk (simulert) */}
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white" />
+          </div>
           <div className="text-left">
             <p className="text-sm font-bold text-gray-900">{other.name}</p>
-            <p className="text-xs text-gray-400">@{other.username}</p>
+            <p className="text-xs text-gray-400">
+              {otherTyping ? (
+                <span className="text-pink-500 font-medium">skriver…</span>
+              ) : (
+                `@${other.username}`
+              )}
+            </p>
           </div>
         </button>
         <button onClick={() => navigate(`/user/${other.id}`)} className="text-gray-400">
@@ -64,25 +95,49 @@ export default function DirectChat() {
           </div>
         )}
 
-        {chat.messages.map((msg) => {
+        {chat.messages.map((msg, idx) => {
           const isMe = msg.from === currentUser.id
+          const isLast = idx === chat.messages.length - 1
+          const showSeen = isMe && isLast && seenMsgId === msg.id
+
           return (
-            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'} gap-0.5`}>
-                <div
-                  className={`px-4 py-2.5 rounded-2xl text-sm ${
+            <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+              <div className={`flex gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
+                <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'} gap-0.5`}>
+                  <div className={`px-4 py-2.5 rounded-2xl text-sm ${
                     isMe
                       ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-tr-sm'
                       : 'bg-white text-gray-800 shadow-sm rounded-tl-sm'
-                  }`}
-                >
-                  {msg.text}
+                  }`}>
+                    {msg.text}
+                  </div>
+                  <span className="text-[10px] text-gray-400 mx-1">{msg.time}</span>
                 </div>
-                <span className="text-[10px] text-gray-400 mx-1">{msg.time}</span>
               </div>
+
+              {/* Lest-kvittering */}
+              {showSeen && (
+                <div className="flex items-center gap-1 mt-0.5 mr-1">
+                  <Avatar initial={other.avatar} size="xs" index={otherIndex} />
+                  <span className="text-[10px] text-gray-400">Sett</span>
+                </div>
+              )}
             </div>
           )
         })}
+
+        {/* Skriveindikator */}
+        {otherTyping && (
+          <div className="flex items-center gap-2">
+            <Avatar initial={other.avatar} size="xs" index={otherIndex} />
+            <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex gap-1 items-center">
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 
