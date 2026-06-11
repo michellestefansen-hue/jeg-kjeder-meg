@@ -12,6 +12,7 @@ interface AppState {
   login: (user: User) => void
   logout: () => void
   register: (name: string, age: number, area: string) => void
+  updateProfile: (updates: Partial<{ name: string; area: string }>) => void
 
   // Aktiviteter
   activities: Activity[]
@@ -48,6 +49,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   login: (user) => set({ currentUser: user, isLoggedIn: true }),
   logout: () => set({ currentUser: null, isLoggedIn: false }),
+
+  updateProfile: (updates) => {
+    const { currentUser } = get()
+    if (!currentUser) return
+    set({ currentUser: { ...currentUser, ...updates } })
+  },
 
   register: (name, age, area) => {
     const newUser: User = {

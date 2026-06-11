@@ -97,13 +97,14 @@ export default function Profile() {
         {/* Innstillinger */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           {[
-            { label: 'Rediger profil', emoji: '✏️' },
-            { label: 'Varsler', emoji: '🔔' },
-            { label: 'Personvern', emoji: '🔒' },
-            { label: 'Hjelp', emoji: '❓' },
-          ].map(({ label, emoji }) => (
+            { label: 'Rediger profil', emoji: '✏️', path: '/edit-profile' },
+            { label: 'Varsler', emoji: '🔔', path: null },
+            { label: 'Personvern', emoji: '🔒', path: null },
+            { label: 'Hjelp', emoji: '❓', path: null },
+          ].map(({ label, emoji, path }) => (
             <button
               key={label}
+              onClick={() => path && navigate(path)}
               className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-50 last:border-0"
             >
               <div className="flex items-center gap-3">
