@@ -57,78 +57,7 @@ const COUNTRIES: Record<string, { flag: string; cities: string[] }> = {
   },
 }
 
-// ─── By-spesifikke aktivitetsforslag ─────────────────────────────────────────
-const CITY_SUGGESTIONS: Record<string, { emoji: string; title: string; desc: string }[]> = {
-  Oslo: [
-    { emoji: '🎢', title: 'Tusenfryd', desc: 'Norges største fornøyelsespark' },
-    { emoji: '🏊', title: 'Frognerbadet', desc: 'Utendørs svømmebad om sommeren' },
-    { emoji: '🎨', title: 'Munch-museet', desc: 'Verdensklasse kunst i Bjørvika' },
-    { emoji: '⛵', title: 'Båttur i Oslofjorden', desc: 'Øyer og sol' },
-    { emoji: '🛍️', title: 'Karl Johans gate', desc: 'Shopping i sentrum' },
-    { emoji: '🧁', title: 'Tim Wendelboe', desc: 'Kaffe og kaker på Grünerløkka' },
-  ],
-  Bergen: [
-    { emoji: '🚡', title: 'Fløibanen', desc: 'Gondolbane med utsikt over byen' },
-    { emoji: '🐟', title: 'Fisketorget', desc: 'Sjømat og matopplevelser' },
-    { emoji: '🏔️', title: 'Vidden-tur', desc: 'Vandring mellom de syv fjell' },
-    { emoji: '🎵', title: 'Konsert på USF', desc: 'Musikk og kultur ved sjøen' },
-    { emoji: '🍦', title: 'Iskrem på Bryggen', desc: 'Historisk kai med is og kos' },
-  ],
-  Trondheim: [
-    { emoji: '⛪', title: 'Nidarosdomen', desc: 'Norges nasjonalhelligdom' },
-    { emoji: '🚲', title: 'Sykkel i Nedre Elvehavn', desc: 'Bysykling langs Nidelva' },
-    { emoji: '🎭', title: 'Trondheim Torg', desc: 'Shopping og kaféliv i sentrum' },
-    { emoji: '🌊', title: 'Munkholmen', desc: 'Bading og piknik på øya' },
-  ],
-  Stavanger: [
-    { emoji: '🪨', title: 'Preikestolen', desc: 'Ikonisk fjelltopp med utsikt' },
-    { emoji: '🎨', title: 'Norsk Oljemuseum', desc: 'Interaktivt og spennende' },
-    { emoji: '🌊', title: 'Badestrand på Sola', desc: 'Sandstrand og bølger' },
-    { emoji: '🛍️', title: 'Stavanger sentrum', desc: 'Butikker og kafeer' },
-  ],
-  Tromsø: [
-    { emoji: '🌌', title: 'Nordlys-jakt', desc: 'Se nordlyset om vinteren' },
-    { emoji: '🐳', title: 'Hvalsafari', desc: 'Se hvaler i fjorden' },
-    { emoji: '⛷️', title: 'Skitur i Tromsø', desc: 'Alpint og langrenn' },
-    { emoji: '🌅', title: 'Fjellheisen', desc: 'Gondolbane med fantastisk utsikt' },
-  ],
-  Lillehammer: [
-    { emoji: '⛷️', title: 'Hafjell alpinsenter', desc: 'Skitur og afterski' },
-    { emoji: '🛷', title: 'Bob-løype', desc: 'Prøv OL-løypen fra 1994' },
-    { emoji: '🏒', title: 'Håkons Hall', desc: 'Ishockey og events' },
-  ],
-  Stockholm: [
-    { emoji: '🎡', title: 'Gröna Lund', desc: 'Tivoli på Djurgården' },
-    { emoji: '🏰', title: 'Gamla Stan', desc: 'Historisk gamlebyen' },
-    { emoji: '🛍️', title: 'Drottninggatan', desc: 'Shoppinggate i sentrum' },
-    { emoji: '🚢', title: 'Skärgården', desc: 'Øyhopping i skjærgården' },
-  ],
-  København: [
-    { emoji: '🎠', title: 'Tivoli', desc: 'Verdens eldste fornøyelsespark' },
-    { emoji: '🧜', title: 'Den lille havfrue', desc: 'Ikonisk landemerke' },
-    { emoji: '🚲', title: 'Sykkel langs kanalene', desc: 'Typisk København-opplevelse' },
-    { emoji: '🍦', title: 'Is på Nørrebro', desc: 'Trendy bydel med kos' },
-  ],
-  Helsinki: [
-    { emoji: '🏖️', title: 'Suomenlinna', desc: 'Festningsøy utenfor byen' },
-    { emoji: '🛁', title: 'Lørdagsbad i sauna', desc: 'Ekte finsk tradisjon' },
-    { emoji: '🎨', title: 'Designmuseet', desc: 'Finsk design og kunst' },
-  ],
-  Reykjavik: [
-    { emoji: '♨️', title: 'Blue Lagoon', desc: 'Geotermisk badeland' },
-    { emoji: '🌋', title: 'Geysir', desc: 'Se geysiren sprute' },
-    { emoji: '🐋', title: 'Hvalsafari', desc: 'Fra Reykjavik havn' },
-  ],
-}
-
-const DEFAULT_SUGGESTIONS = [
-  { emoji: '🎳', title: 'Bowling', desc: 'Klassisk lagmoro' },
-  { emoji: '🎬', title: 'Kino', desc: 'Se siste nytt på lerretet' },
-  { emoji: '☕', title: 'Kafé', desc: 'God kaffe og kaker' },
-  { emoji: '🛍️', title: 'Shopping', desc: 'Shoppingtur i sentrum' },
-  { emoji: '🧺', title: 'Piknik', desc: 'Mat og drikke ute i naturen' },
-  { emoji: '🍕', title: 'Pizza', desc: 'Pizzakveld med gjengen' },
-]
+import { getSuggestionsForArea } from '../../data/citySuggestions'
 
 export default function Explore() {
   const navigate = useNavigate()
@@ -275,7 +204,7 @@ export default function Explore() {
         {/* ─── Forslag til aktiviteter i valgt by ─── */}
         {(() => {
           const cityName = location.split(',')[0].trim()
-          const suggestions = CITY_SUGGESTIONS[cityName] ?? DEFAULT_SUGGESTIONS
+          const suggestions = getSuggestionsForArea(location)
           return (
             <section>
               <h2 className="text-sm font-bold text-gray-800 mb-3">

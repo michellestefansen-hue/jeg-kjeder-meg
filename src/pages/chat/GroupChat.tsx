@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Send, Plus, X, Trash2 } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { USERS } from '../../data/mockData'
+import { getSuggestionsForArea } from '../../data/citySuggestions'
 import Avatar from '../../components/ui/Avatar'
 
 type Tab = 'chat' | 'kasse' | 'hjul' | 'gjort'
@@ -283,6 +284,35 @@ export default function GroupChat() {
                 )}
               </div>
               <p className="text-xs text-gray-400">Alle legger til aktiviteter de vil gjøre. Deretter stemmer dere!</p>
+
+              {/* Forslag basert på nærområde */}
+              {wheel.items.length === 0 && (() => {
+                const area = currentUser.area
+                const suggestions = getSuggestionsForArea(area)
+                const city = area.split(',')[0].trim()
+                return (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-gray-500">✨ Forslag i {city}</p>
+                    <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+                      {suggestions.map((s) => (
+                        <button
+                          key={s.title}
+                          onClick={() => { addWheelItem(groupId!, s.title, s.emoji) }}
+                          className="flex-shrink-0 flex items-center gap-2 bg-white border border-gray-100 rounded-2xl px-3 py-2 shadow-sm active:scale-95 transition-transform"
+                        >
+                          <span className="text-xl">{s.emoji}</span>
+                          <div className="text-left">
+                            <p className="text-xs font-semibold text-gray-800 whitespace-nowrap">{s.title}</p>
+                            <p className="text-[10px] text-gray-400 whitespace-nowrap">{s.desc}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {/* Lagt til forslag */}
               {wheel.items.map((item) => (
                 <div key={item.id} className="bg-white rounded-2xl px-4 py-3 shadow-sm flex items-center gap-3">
                   <span className="text-2xl">{item.emoji}</span>
@@ -292,6 +322,8 @@ export default function GroupChat() {
                   )}
                 </div>
               ))}
+
+              {/* Legg til eget */}
               {showAddItem ? (
                 <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
                   <div className="flex flex-wrap gap-1.5">{EMOJIS.map((e) => <button key={e} onClick={() => setNewEmoji(e)} className={`text-xl p-1.5 rounded-xl ${newEmoji === e ? 'bg-pink-100' : ''}`}>{e}</button>)}</div>
@@ -303,7 +335,7 @@ export default function GroupChat() {
                 </div>
               ) : (
                 <button onClick={() => setShowAddItem(true)} className="w-full flex items-center gap-2 border-2 border-dashed border-gray-200 rounded-2xl p-4 text-gray-400 text-sm">
-                  <Plus size={16} /> Legg til forslag
+                  <Plus size={16} /> Legg til eget forslag
                 </button>
               )}
             </>
