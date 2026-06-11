@@ -1,10 +1,11 @@
 // ─── Registreringsside ────────────────────────────────────────────────────────
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin } from 'lucide-react'
+import { MapPin, X } from 'lucide-react'
 import Button from '../../components/ui/Button'
 import Header from '../../components/layout/Header'
 import { useAppStore } from '../../store/useAppStore'
+import { POSTNUMMER } from '../../data/postnummer'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -16,6 +17,7 @@ export default function Register() {
   const [area, setArea] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showAreaPanel, setShowAreaPanel] = useState(false)
 
   const ageNum = parseInt(age)
   const ageValid = ageNum >= 10 && ageNum <= 17
@@ -76,30 +78,59 @@ export default function Register() {
           <>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Hvor bor du? 📍</h2>
-              <p className="text-gray-500 mt-1">Vi bruker dette for å finne aktiviteter i nærheten</p>
+              <p className="text-gray-500 mt-1">Skriv postnummer eller poststed</p>
             </div>
             <div className="relative">
-              <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <MapPin size={16} className="absolute left-4 top-4 text-pink-400 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Bydel eller sted, f.eks. Grünerløkka"
+                placeholder="F.eks. 2300 eller Hamar"
                 value={area}
-                onChange={(e) => setArea(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-2xl pl-10 pr-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
+                onChange={(e) => { setArea(e.target.value); setShowAreaPanel(true) }}
+                onFocus={() => setShowAreaPanel(true)}
+                onBlur={() => setTimeout(() => setShowAreaPanel(false), 150)}
+                className="w-full border-2 border-gray-100 rounded-2xl pl-10 pr-10 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
               />
-            </div>
-            {/* Hurtigvalg */}
-            <div className="flex flex-wrap gap-2">
-              {['Grünerløkka', 'Majorstuen', 'Frogner', 'Bislett', 'St. Hanshaugen'].map((place) => (
-                <button
-                  key={place}
-                  onClick={() => setArea(place + ', Oslo')}
-                  className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${area.includes(place) ? 'bg-pink-100 border-pink-300 text-pink-600' : 'border-gray-200 text-gray-600'}`}
-                >
-                  {place}
+              {area && (
+                <button onMouseDown={(e) => e.preventDefault()} onClick={() => setArea('')} className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <X size={15} className="text-gray-400" />
                 </button>
-              ))}
+              )}
             </div>
+            {/* Autocomplete */}
+            {showAreaPanel && area.length > 0 && (() => {
+              const q = area.trim().toLowerCase()
+              const hits = POSTNUMMER.filter(
+                (p) => p.nr.startsWith(q) || p.sted.toLowerCase().includes(q) || p.kommune.toLowerCase().includes(q)
+              )
+              const seen = new Set<string>()
+              const unique = hits.filter((p) => {
+                const key = `${p.sted}-${p.kommune}`
+                if (seen.has(key)) return false
+                seen.add(key)
+                return true
+              }).slice(0, 6)
+              if (unique.length === 0) return null
+              return (
+                <div className="bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden -mt-2">
+                  {unique.map((p) => (
+                    <button
+                      key={`${p.nr}-${p.sted}`}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { setArea(`${p.sted}, ${p.kommune}`); setShowAreaPanel(false) }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-pink-50 transition-colors border-b border-gray-50 last:border-0 text-left"
+                    >
+                      <MapPin size={13} className="text-pink-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-800">{p.sted}</p>
+                        <p className="text-xs text-gray-400">{p.kommune} · {p.nr}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )
+            })()}
             <Button variant="primary" fullWidth size="lg" disabled={!area} onClick={() => setStep(3)}>
               Neste
             </Button>
