@@ -105,10 +105,12 @@ export default function SpinWheel() {
       if (progress < 1) {
         animRef.current = requestAnimationFrame(animate)
       } else {
-        // Finn vinner: pil peker opp (3 o'clock = 0, top = -PI/2)
-        const normalised = ((currentRot % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
-        const pointerAngle = (2 * Math.PI - normalised + Math.PI * 1.5) % (2 * Math.PI)
-        const winnerIndex = Math.floor(pointerAngle / segmentAngle) % totalSegments
+        // Finn vinner: pil peker ned mot toppen av hjulet.
+        // Segment i starter på vinkel: rot + i * segmentAngle - PI/2
+        // Segment ved toppen (vinkel 0 etter offset) er der -rot treffer.
+        // Forenklet: normaliser -rot til [0, 2PI) og del på segmentvinkel.
+        const normalised = ((-currentRot % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
+        const winnerIndex = Math.floor(normalised / segmentAngle) % totalSegments
         setWinner(segments[winnerIndex].emoji + ' ' + segments[winnerIndex].title)
         setSpinning(false)
       }
@@ -162,14 +164,9 @@ export default function SpinWheel() {
               {spinning ? '🎡 Snurrer...' : '🎡 Snurr hjulet!'}
             </Button>
           ) : (
-            <>
-              <Button variant="primary" fullWidth size="lg" onClick={() => navigate(-1)}>
-                Tilbake til aktiviteten ✓
-              </Button>
-              <Button variant="secondary" fullWidth onClick={() => { setWinner(null) }}>
-                Snurr igjen
-              </Button>
-            </>
+            <Button variant="primary" fullWidth size="lg" onClick={() => navigate(-1)}>
+              Tilbake til aktiviteten ✓
+            </Button>
           )}
         </div>
       </div>
