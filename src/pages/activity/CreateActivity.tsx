@@ -33,7 +33,8 @@ export default function CreateActivity() {
   const [type, setType] = useState<'open' | 'closed'>('open')
   const [title, setTitle] = useState(searchParams.get('title') ?? '')
   const [emoji, setEmoji] = useState(searchParams.get('emoji') ?? '🎉')
-  const [location, setLocation] = useState(searchParams.get('location') ?? '')
+  // Ikke pre-fyll lokasjon fra URL — brukeren må velge selv for å unngå feil by
+  const [location, setLocation] = useState('')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [maxParticipants, setMaxParticipants] = useState(6)

@@ -19,13 +19,21 @@ export default function Home() {
     (a) => a.participants.includes(currentUser.id) && a.status !== 'completed'
   )
 
-  // Aktiviteter i nærheten brukeren IKKE er med på, åpne
+  // Brukerens by (første del av area, f.eks. "Grünerløkka" fra "Grünerløkka, Oslo")
+  const userCity = currentUser.area.split(',')[0].trim().toLowerCase()
+
+  // Eksakt ordmatch for by — "oslo" skal ikke matche "grünerløkka" eller andre byer
+  const cityMatch = (text: string, city: string) =>
+    text.toLowerCase().split(/[\s,]+/).includes(city)
+
+  // Aktiviteter i nærheten — filtrerer på by i tillegg til alder
   const nearbyActivities = activities.filter(
     (a) =>
       !a.participants.includes(currentUser.id) &&
       a.type === 'open' &&
       a.ageRange[0] <= currentUser.age &&
-      currentUser.age <= a.ageRange[1]
+      currentUser.age <= a.ageRange[1] &&
+      (cityMatch(a.location, userCity) || cityMatch(a.address, userCity))
   )
 
   const openActivity = (id: string) => {

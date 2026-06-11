@@ -73,13 +73,18 @@ export default function Explore() {
   // Hent bynavn uten land (f.eks. "Oslo" fra "Oslo, Norge")
   const selectedCity = location.split(',')[0].trim().toLowerCase()
 
+  // Sjekk om aktiviteten hører til valgt by — eksakt ordmatch
+  const matchesCity = (text: string) => {
+    const words = text.toLowerCase().split(/[\s,]+/)
+    return words.includes(selectedCity)
+  }
+
   const openActivities = activities.filter(
     (a) =>
       a.type === 'open' &&
       a.ageRange[0] <= currentUser.age &&
       currentUser.age <= a.ageRange[1] &&
-      (a.location.toLowerCase().includes(selectedCity) ||
-        a.address.toLowerCase().includes(selectedCity)) &&
+      (matchesCity(a.location) || matchesCity(a.address)) &&
       (query === '' ||
         a.title.toLowerCase().includes(query.toLowerCase()) ||
         a.location.toLowerCase().includes(query.toLowerCase()))
@@ -214,7 +219,7 @@ export default function Explore() {
                 {suggestions.map((s) => (
                   <button
                     key={s.title}
-                    onClick={() => navigate(`/create-activity?title=${encodeURIComponent(s.title)}&emoji=${encodeURIComponent(s.emoji)}&location=${encodeURIComponent(location)}`)}
+                    onClick={() => navigate(`/create-activity?title=${encodeURIComponent(s.title)}&emoji=${encodeURIComponent(s.emoji)}`)}
                     className="flex-shrink-0 w-36 bg-white rounded-2xl p-3 text-left shadow-sm border border-gray-50 active:scale-95 transition-transform"
                   >
                     <span className="text-3xl">{s.emoji}</span>
