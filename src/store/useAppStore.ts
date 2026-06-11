@@ -37,6 +37,11 @@ interface AppState {
   activeActivityId: string | null
   setActiveActivity: (id: string | null) => void
 
+  // Blokkering
+  blockedUsers: string[]
+  blockUser: (userId: string) => void
+  unblockUser: (userId: string) => void
+
   // Tema
   bgColor: string
   setBgColor: (color: string) => void
@@ -186,6 +191,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   // ─── Navigasjon ───────────────────────────────────────────────────────────
   activeActivityId: null,
   setActiveActivity: (id) => set({ activeActivityId: id }),
+
+  // ─── Blokkering ───────────────────────────────────────────────────────────
+  blockedUsers: [],
+  blockUser: (userId) => set((s) => ({ blockedUsers: [...s.blockedUsers, userId] })),
+  unblockUser: (userId) => set((s) => ({ blockedUsers: s.blockedUsers.filter((id) => id !== userId) })),
 
   // ─── Tema ─────────────────────────────────────────────────────────────────
   bgColor: '#ffffff',

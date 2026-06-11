@@ -9,12 +9,12 @@ import { USERS } from '../../data/mockData'
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { currentUser, activities, logout, bgColor, setBgColor, bannerColor, setBannerColor } = useAppStore()
+  const { currentUser, activities, logout, bgColor, setBgColor, bannerColor, setBannerColor, blockedUsers } = useAppStore()
   if (!currentUser) { navigate('/'); return null }
 
   const myActivities = activities.filter((a) => a.participants.includes(currentUser.id))
   const completedActivities = activities.filter((a) => a.status === 'completed' && a.participants.includes(currentUser.id))
-  const friends = USERS.filter((u) => currentUser.friends.includes(u.id))
+  const friends = USERS.filter((u) => currentUser.friends.includes(u.id) && !blockedUsers.includes(u.id))
 
   return (
     <div className="min-h-dvh pb-24">

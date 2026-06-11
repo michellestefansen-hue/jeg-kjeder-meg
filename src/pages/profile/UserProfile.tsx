@@ -1,6 +1,7 @@
 // ─── Se andres profil ─────────────────────────────────────────────────────────
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, UserPlus, UserCheck } from 'lucide-react'
+import { MapPin, UserPlus, UserCheck, ShieldOff, Shield } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { USERS } from '../../data/mockData'
 import Avatar from '../../components/ui/Avatar'
@@ -9,7 +10,8 @@ import Header from '../../components/layout/Header'
 export default function UserProfile() {
   const { userId } = useParams()
   const navigate = useNavigate()
-  const { currentUser, activities } = useAppStore()
+  const { currentUser, activities, blockedUsers, blockUser, unblockUser } = useAppStore()
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false)
 
   const user = USERS.find((u) => u.id === userId)
   const userIndex = USERS.findIndex((u) => u.id === userId)
@@ -18,6 +20,7 @@ export default function UserProfile() {
 
   const isFriend = currentUser.friends.includes(user.id)
   const isMe = user.id === currentUser.id
+  const isBlocked = blockedUsers.includes(user.id)
 
   // Felles aktiviteter
   const sharedActivities = activities.filter(
@@ -57,21 +60,80 @@ export default function UserProfile() {
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        {/* Legg til venn / allerede venn */}
         {!isMe && (
-          <button
-            className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-colors ${
-              isFriend
-                ? 'bg-green-50 text-green-600 border border-green-200'
-                : 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-md shadow-pink-200'
-            }`}
-          >
-            {isFriend ? (
-              <><UserCheck size={16} /> Venner</>
-            ) : (
-              <><UserPlus size={16} /> Legg til venn</>
+          <>
+            {/* Legg til venn / allerede venn */}
+            {!isBlocked && (
+              <button
+                className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-colors ${
+                  isFriend
+                    ? 'bg-green-50 text-green-600 border border-green-200'
+                    : 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-md shadow-pink-200'
+                }`}
+              >
+                {isFriend ? (
+                  <><UserCheck size={16} /> Venner</>
+                ) : (
+                  <><UserPlus size={16} /> Legg til venn</>
+                )}
+              </button>
             )}
-          </button>
+
+            {/* Blokker / opphev blokkering */}
+            {!isBlocked ? (
+              <button
+                onClick={() => setShowBlockConfirm(true)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-medium text-gray-400 border border-gray-200"
+              >
+                <ShieldOff size={15} /> Blokker bruker
+              </button>
+            ) : (
+              <div className="bg-red-50 border border-red-100 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center gap-2 text-red-500">
+                  <Shield size={16} />
+                  <p className="text-sm font-semibold">Du har blokkert {user.name}</p>
+                </div>
+                <p className="text-xs text-red-400">
+                  {user.name} kan ikke se profilen din, sende deg meldinger eller delta på aktivitetene dine.
+                </p>
+                <button
+                  onClick={() => unblockUser(user.id)}
+                  className="w-full py-2 rounded-xl bg-white border border-red-200 text-red-500 text-sm font-medium"
+                >
+                  Opphev blokkering
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Bekreft blokker-dialog */}
+        {showBlockConfirm && (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center" onClick={() => setShowBlockConfirm(false)}>
+            <div className="bg-white rounded-t-3xl w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                  <ShieldOff size={22} className="text-red-500" />
+                </div>
+                <h3 className="text-lg font-black text-gray-900">Blokker {user.name}?</h3>
+                <p className="text-sm text-gray-500">
+                  {user.name} vil ikke kunne se profilen din, skrive til deg eller delta på aktivitetene dine.
+                </p>
+              </div>
+              <button
+                onClick={() => { blockUser(user.id); setShowBlockConfirm(false); navigate(-1) }}
+                className="w-full py-3 bg-red-500 text-white rounded-2xl font-semibold text-sm"
+              >
+                Ja, blokker {user.name}
+              </button>
+              <button
+                onClick={() => setShowBlockConfirm(false)}
+                className="w-full py-3 bg-gray-100 text-gray-600 rounded-2xl font-semibold text-sm"
+              >
+                Avbryt
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Felles aktiviteter */}
