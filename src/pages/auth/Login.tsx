@@ -38,7 +38,8 @@ export default function Login() {
         navigate('/home')
       }
     } catch (e: unknown) {
-      setError('Feil e-post eller passord. Prøv igjen.')
+      const msg = e instanceof Error ? e.message : String(e)
+      setError(msg)
     } finally {
       setLoading(false)
     }
