@@ -57,6 +57,79 @@ const COUNTRIES: Record<string, { flag: string; cities: string[] }> = {
   },
 }
 
+// ─── By-spesifikke aktivitetsforslag ─────────────────────────────────────────
+const CITY_SUGGESTIONS: Record<string, { emoji: string; title: string; desc: string }[]> = {
+  Oslo: [
+    { emoji: '🎢', title: 'Tusenfryd', desc: 'Norges største fornøyelsespark' },
+    { emoji: '🏊', title: 'Frognerbadet', desc: 'Utendørs svømmebad om sommeren' },
+    { emoji: '🎨', title: 'Munch-museet', desc: 'Verdensklasse kunst i Bjørvika' },
+    { emoji: '⛵', title: 'Båttur i Oslofjorden', desc: 'Øyer og sol' },
+    { emoji: '🛍️', title: 'Karl Johans gate', desc: 'Shopping i sentrum' },
+    { emoji: '🧁', title: 'Tim Wendelboe', desc: 'Kaffe og kaker på Grünerløkka' },
+  ],
+  Bergen: [
+    { emoji: '🚡', title: 'Fløibanen', desc: 'Gondolbane med utsikt over byen' },
+    { emoji: '🐟', title: 'Fisketorget', desc: 'Sjømat og matopplevelser' },
+    { emoji: '🏔️', title: 'Vidden-tur', desc: 'Vandring mellom de syv fjell' },
+    { emoji: '🎵', title: 'Konsert på USF', desc: 'Musikk og kultur ved sjøen' },
+    { emoji: '🍦', title: 'Iskrem på Bryggen', desc: 'Historisk kai med is og kos' },
+  ],
+  Trondheim: [
+    { emoji: '⛪', title: 'Nidarosdomen', desc: 'Norges nasjonalhelligdom' },
+    { emoji: '🚲', title: 'Sykkel i Nedre Elvehavn', desc: 'Bysykling langs Nidelva' },
+    { emoji: '🎭', title: 'Trondheim Torg', desc: 'Shopping og kaféliv i sentrum' },
+    { emoji: '🌊', title: 'Munkholmen', desc: 'Bading og piknik på øya' },
+  ],
+  Stavanger: [
+    { emoji: '🪨', title: 'Preikestolen', desc: 'Ikonisk fjelltopp med utsikt' },
+    { emoji: '🎨', title: 'Norsk Oljemuseum', desc: 'Interaktivt og spennende' },
+    { emoji: '🌊', title: 'Badestrand på Sola', desc: 'Sandstrand og bølger' },
+    { emoji: '🛍️', title: 'Stavanger sentrum', desc: 'Butikker og kafeer' },
+  ],
+  Tromsø: [
+    { emoji: '🌌', title: 'Nordlys-jakt', desc: 'Se nordlyset om vinteren' },
+    { emoji: '🐳', title: 'Hvalsafari', desc: 'Se hvaler i fjorden' },
+    { emoji: '⛷️', title: 'Skitur i Tromsø', desc: 'Alpint og langrenn' },
+    { emoji: '🌅', title: 'Fjellheisen', desc: 'Gondolbane med fantastisk utsikt' },
+  ],
+  Lillehammer: [
+    { emoji: '⛷️', title: 'Hafjell alpinsenter', desc: 'Skitur og afterski' },
+    { emoji: '🛷', title: 'Bob-løype', desc: 'Prøv OL-løypen fra 1994' },
+    { emoji: '🏒', title: 'Håkons Hall', desc: 'Ishockey og events' },
+  ],
+  Stockholm: [
+    { emoji: '🎡', title: 'Gröna Lund', desc: 'Tivoli på Djurgården' },
+    { emoji: '🏰', title: 'Gamla Stan', desc: 'Historisk gamlebyen' },
+    { emoji: '🛍️', title: 'Drottninggatan', desc: 'Shoppinggate i sentrum' },
+    { emoji: '🚢', title: 'Skärgården', desc: 'Øyhopping i skjærgården' },
+  ],
+  København: [
+    { emoji: '🎠', title: 'Tivoli', desc: 'Verdens eldste fornøyelsespark' },
+    { emoji: '🧜', title: 'Den lille havfrue', desc: 'Ikonisk landemerke' },
+    { emoji: '🚲', title: 'Sykkel langs kanalene', desc: 'Typisk København-opplevelse' },
+    { emoji: '🍦', title: 'Is på Nørrebro', desc: 'Trendy bydel med kos' },
+  ],
+  Helsinki: [
+    { emoji: '🏖️', title: 'Suomenlinna', desc: 'Festningsøy utenfor byen' },
+    { emoji: '🛁', title: 'Lørdagsbad i sauna', desc: 'Ekte finsk tradisjon' },
+    { emoji: '🎨', title: 'Designmuseet', desc: 'Finsk design og kunst' },
+  ],
+  Reykjavik: [
+    { emoji: '♨️', title: 'Blue Lagoon', desc: 'Geotermisk badeland' },
+    { emoji: '🌋', title: 'Geysir', desc: 'Se geysiren sprute' },
+    { emoji: '🐋', title: 'Hvalsafari', desc: 'Fra Reykjavik havn' },
+  ],
+}
+
+const DEFAULT_SUGGESTIONS = [
+  { emoji: '🎳', title: 'Bowling', desc: 'Klassisk lagmoro' },
+  { emoji: '🎬', title: 'Kino', desc: 'Se siste nytt på lerretet' },
+  { emoji: '☕', title: 'Kafé', desc: 'God kaffe og kaker' },
+  { emoji: '🛍️', title: 'Shopping', desc: 'Shoppingtur i sentrum' },
+  { emoji: '🧺', title: 'Piknik', desc: 'Mat og drikke ute i naturen' },
+  { emoji: '🍕', title: 'Pizza', desc: 'Pizzakveld med gjengen' },
+]
+
 export default function Explore() {
   const navigate = useNavigate()
   const { currentUser, activities, setActiveActivity } = useAppStore()
@@ -197,13 +270,42 @@ export default function Explore() {
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">Viser aktiviteter nær</span>
-          <span className="text-xs bg-pink-100 text-pink-600 font-medium px-2 py-0.5 rounded-full">
-            📍 {location}
-          </span>
-        </div>
+      <div className="px-4 py-4 space-y-5">
+
+        {/* ─── Forslag til aktiviteter i valgt by ─── */}
+        {(() => {
+          const cityName = location.split(',')[0].trim()
+          const suggestions = CITY_SUGGESTIONS[cityName] ?? DEFAULT_SUGGESTIONS
+          return (
+            <section>
+              <h2 className="text-sm font-bold text-gray-800 mb-3">
+                ✨ Ting å gjøre i {cityName}
+              </h2>
+              <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+                {suggestions.map((s) => (
+                  <button
+                    key={s.title}
+                    onClick={() => navigate(`/create-activity?title=${encodeURIComponent(s.title)}&emoji=${encodeURIComponent(s.emoji)}&location=${encodeURIComponent(location)}`)}
+                    className="flex-shrink-0 w-36 bg-white rounded-2xl p-3 text-left shadow-sm border border-gray-50 active:scale-95 transition-transform"
+                  >
+                    <span className="text-3xl">{s.emoji}</span>
+                    <p className="font-semibold text-gray-900 text-sm mt-2 leading-tight">{s.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 leading-tight">{s.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )
+        })()}
+
+        {/* ─── Aktive arrangementer ─── */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-sm font-bold text-gray-800">Åpne arrangementer</h2>
+            <span className="text-xs bg-pink-100 text-pink-600 font-medium px-2 py-0.5 rounded-full">
+              📍 {location.split(',')[0].trim()}
+            </span>
+          </div>
 
         {openActivities.map((activity) => {
           const organizer = USERS.find((u) => u.id === activity.organizerId)
@@ -238,12 +340,14 @@ export default function Explore() {
           )
         })}
 
-        {openActivities.length === 0 && (
-          <div className="text-center py-16 text-gray-400">
-            <p className="text-4xl mb-3">🌍</p>
-            <p>Ingen åpne aktiviteter nær {location}</p>
-          </div>
-        )}
+          {openActivities.length === 0 && (
+            <div className="text-center py-10 text-gray-400">
+              <p className="text-4xl mb-3">🌍</p>
+              <p className="text-sm">Ingen åpne arrangementer i {location.split(',')[0].trim()} ennå</p>
+              <p className="text-xs mt-1">Vær den første — bruk forslagene over! 👆</p>
+            </div>
+          )}
+        </div>
       </div>
 
       <BottomNav />
