@@ -11,21 +11,21 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Jeg kjeder meg',
-        short_name: 'Kjeder meg',
-        description: 'Hva skal jeg gjøre nå?',
-        theme_color: '#ffffff',
+        name: 'Lokka',
+        short_name: 'Lokka',
+        description: 'Planlegg gøye ting med vennene dine',
+        theme_color: '#ec4899',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
-            src: '/icon-192.png',
+            src: '/favicon.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/icon-512.png',
+            src: '/favicon.png',
             sizes: '512x512',
             type: 'image/png',
           },
