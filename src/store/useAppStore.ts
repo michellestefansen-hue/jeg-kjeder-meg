@@ -65,16 +65,32 @@ interface AppState {
     name: string; emoji: string; members: string[]
     messages: { id: string; from: string; text: string; time: string }[]
     unread: number
-    kasse: number                                   // felles pengekasse i kr
-    todos: { id: string; text: string; done: boolean; addedBy: string }[]
+    kasse: number
+    // Lykkehjul
+    wheel: {
+      items: { id: string; text: string; emoji: string; votes: string[]; addedBy: string }[]
+      phase: 'adding' | 'voting' | 'runoff' | 'spinning' | 'done'
+      runoffIds: string[]
+      winner: string | null
+      spunOnce: boolean
+    }
+    // Fullført
+    completedBy: string[]
   }>
   createGroup: (name: string, emoji: string, memberIds: string[]) => string
   sendGroupMessage: (groupId: string, text: string) => void
   markGroupRead: (groupId: string) => void
   addToGroupKasse: (groupId: string, amount: number) => void
-  addGroupTodo: (groupId: string, text: string) => void
-  toggleGroupTodo: (groupId: string, todoId: string) => void
-  removeGroupTodo: (groupId: string, todoId: string) => void
+  // Lykkehjul
+  addWheelItem: (groupId: string, text: string, emoji: string) => void
+  removeWheelItem: (groupId: string, itemId: string) => void
+  voteWheelItem: (groupId: string, itemId: string) => void
+  startVoting: (groupId: string) => void
+  finishVoting: (groupId: string) => void
+  setWheelWinner: (groupId: string, winnerId: string) => void
+  resetWheel: (groupId: string) => void
+  // Fullført
+  markDone: (groupId: string) => void
 
   // Tema
   bgColor: string
@@ -280,16 +296,18 @@ export const useAppStore = create<AppState>((set, get) => ({
   blockUser: (userId) => set((s) => ({ blockedUsers: [...s.blockedUsers, userId] })),
   unblockUser: (userId) => set((s) => ({ blockedUsers: s.blockedUsers.filter((id) => id !== userId) })),
 
+  // ─── Helpers ──────────────────────────────────────────────────────────────
   // ─── Gruppechat ───────────────────────────────────────────────────────────
   groupChats: {},
   createGroup: (name, emoji, memberIds) => {
     const { currentUser } = get()
     if (!currentUser) return ''
     const id = `g_${Date.now()}`
+    const emptyWheel = { items: [], phase: 'adding' as const, runoffIds: [], winner: null, spunOnce: false }
     set((s) => ({
       groupChats: {
         ...s.groupChats,
-        [id]: { name, emoji, members: [currentUser.id, ...memberIds], messages: [], unread: 0, kasse: 0, todos: [] },
+        [id]: { name, emoji, members: [currentUser.id, ...memberIds], messages: [], unread: 0, kasse: 0, wheel: emptyWheel, completedBy: [] },
       },
     }))
     return id
@@ -300,46 +318,101 @@ export const useAppStore = create<AppState>((set, get) => ({
     const now = new Date()
     const time = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
     const msg = { id: `gm_${Date.now()}`, from: currentUser.id, text, time }
-    const existing = groupChats[groupId]
-    if (!existing) return
-    set((s) => ({ groupChats: { ...s.groupChats, [groupId]: { ...existing, messages: [...existing.messages, msg] } } }))
+    const g = groupChats[groupId]
+    if (!g) return
+    set((s) => ({ groupChats: { ...s.groupChats, [groupId]: { ...g, messages: [...g.messages, msg] } } }))
   },
   markGroupRead: (groupId) => {
-    set((s) => {
-      const g = s.groupChats[groupId]
-      if (!g) return s
-      return { groupChats: { ...s.groupChats, [groupId]: { ...g, unread: 0 } } }
-    })
+    set((s) => { const g = s.groupChats[groupId]; if (!g) return s; return { groupChats: { ...s.groupChats, [groupId]: { ...g, unread: 0 } } } })
   },
   addToGroupKasse: (groupId, amount) => {
-    set((s) => {
-      const g = s.groupChats[groupId]
-      if (!g) return s
-      return { groupChats: { ...s.groupChats, [groupId]: { ...g, kasse: g.kasse + amount } } }
-    })
+    set((s) => { const g = s.groupChats[groupId]; if (!g) return s; return { groupChats: { ...s.groupChats, [groupId]: { ...g, kasse: g.kasse + amount } } } })
   },
-  addGroupTodo: (groupId, text) => {
+
+  // ─── Lykkehjul ────────────────────────────────────────────────────────────
+  addWheelItem: (groupId, text, emoji) => {
     const { currentUser } = get()
     if (!currentUser) return
     set((s) => {
-      const g = s.groupChats[groupId]
-      if (!g) return s
-      const todo = { id: `t_${Date.now()}`, text, done: false, addedBy: currentUser.id }
-      return { groupChats: { ...s.groupChats, [groupId]: { ...g, todos: [...g.todos, todo] } } }
+      const g = s.groupChats[groupId]; if (!g) return s
+      const item = { id: `wi_${Date.now()}`, text, emoji, votes: [], addedBy: currentUser.id }
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, wheel: { ...g.wheel, items: [...g.wheel.items, item] } } } }
     })
   },
-  toggleGroupTodo: (groupId, todoId) => {
+  removeWheelItem: (groupId, itemId) => {
     set((s) => {
-      const g = s.groupChats[groupId]
-      if (!g) return s
-      return { groupChats: { ...s.groupChats, [groupId]: { ...g, todos: g.todos.map((t) => t.id === todoId ? { ...t, done: !t.done } : t) } } }
+      const g = s.groupChats[groupId]; if (!g) return s
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, wheel: { ...g.wheel, items: g.wheel.items.filter((i) => i.id !== itemId) } } } }
     })
   },
-  removeGroupTodo: (groupId, todoId) => {
+  voteWheelItem: (groupId, itemId) => {
+    const { currentUser } = get()
+    if (!currentUser) return
     set((s) => {
-      const g = s.groupChats[groupId]
-      if (!g) return s
-      return { groupChats: { ...s.groupChats, [groupId]: { ...g, todos: g.todos.filter((t) => t.id !== todoId) } } }
+      const g = s.groupChats[groupId]; if (!g) return s
+      const items = g.wheel.items.map((item) => {
+        if (item.id !== itemId) return item
+        const hasVoted = item.votes.includes(currentUser.id)
+        return { ...item, votes: hasVoted ? item.votes.filter((v) => v !== currentUser.id) : [...item.votes, currentUser.id] }
+      })
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, wheel: { ...g.wheel, items } } } }
+    })
+  },
+  startVoting: (groupId) => {
+    set((s) => {
+      const g = s.groupChats[groupId]; if (!g) return s
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, wheel: { ...g.wheel, phase: 'voting' } } } }
+    })
+  },
+  finishVoting: (groupId) => {
+    set((s) => {
+      const g = s.groupChats[groupId]; if (!g) return s
+      const isRunoff = g.wheel.phase === 'runoff'
+      const candidates = isRunoff
+        ? g.wheel.items.filter((i) => g.wheel.runoffIds.includes(i.id))
+        : g.wheel.items
+      const maxVotes = Math.max(...candidates.map((i) => i.votes.length))
+      const tied = candidates.filter((i) => i.votes.length === maxVotes)
+      if (tied.length === 1) {
+        // Klar vinner
+        return { groupChats: { ...s.groupChats, [groupId]: { ...g, wheel: { ...g.wheel, phase: 'done', winner: tied[0].id } } } }
+      }
+      if (!isRunoff) {
+        // Første uavgjort → omgang
+        return { groupChats: { ...s.groupChats, [groupId]: { ...g, wheel: { ...g.wheel, phase: 'runoff', runoffIds: tied.map((i) => i.id), items: g.wheel.items.map((i) => ({ ...i, votes: [] })) } } } }
+      }
+      // Andre uavgjort → Spin the Wheel
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, wheel: { ...g.wheel, phase: 'spinning', runoffIds: tied.map((i) => i.id) } } } }
+    })
+  },
+  setWheelWinner: (groupId, winnerId) => {
+    set((s) => {
+      const g = s.groupChats[groupId]; if (!g) return s
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, wheel: { ...g.wheel, phase: 'done', winner: winnerId, spunOnce: true } } } }
+    })
+  },
+  resetWheel: (groupId) => {
+    const emptyWheel = { items: [], phase: 'adding' as const, runoffIds: [], winner: null, spunOnce: false }
+    set((s) => {
+      const g = s.groupChats[groupId]; if (!g) return s
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, wheel: emptyWheel } } }
+    })
+  },
+
+  // ─── Fullført ─────────────────────────────────────────────────────────────
+  markDone: (groupId) => {
+    const { currentUser } = get()
+    if (!currentUser) return
+    set((s) => {
+      const g = s.groupChats[groupId]; if (!g) return s
+      if (g.completedBy.includes(currentUser.id)) return s
+      const completedBy = [...g.completedBy, currentUser.id]
+      // Alle har fullført → slett gruppen
+      if (completedBy.length >= g.members.length) {
+        const { [groupId]: _, ...rest } = s.groupChats
+        return { groupChats: rest }
+      }
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, completedBy } } }
     })
   },
 
