@@ -1,10 +1,92 @@
-// ─── Reiserute med animert kart ───────────────────────────────────────────────
+// ─── Reiserute med OpenStreetMap via Leaflet ─────────────────────────────────
 import { useParams } from 'react-router-dom'
-import { Navigation, Clock } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { TRAVEL_ROUTES } from '../../data/mockData'
 import Header from '../../components/layout/Header'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet'
+import L from 'leaflet'
+
+// ─── Fikse manglende Leaflet-ikoner ──────────────────────────────────────────
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+})
+
+const startIcon = new L.DivIcon({
+  html: `<div style="background:#22C55E;color:white;width:28px;height:28px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,0.3)">A</div>`,
+  className: '',
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+})
+
+const endIcon = new L.DivIcon({
+  html: `<div style="background:#EC4899;color:white;width:28px;height:28px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,0.3)">B</div>`,
+  className: '',
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+})
+
+// ─── Koordinater for norske byer og kjente steder ────────────────────────────
+const COORDS: Record<string, [number, number]> = {
+  // Oslo-området
+  'oslo': [59.9139, 10.7522],
+  'grünerløkka': [59.9226, 10.7617],
+  'majorstuen': [59.9296, 10.7158],
+  'frogner': [59.9194, 10.7083],
+  'bislett': [59.9256, 10.7319],
+  'grønland': [59.9083, 10.7669],
+  'vulkan': [59.9228, 10.7513],
+  'aker brygge': [59.9086, 10.7264],
+  'sentrum': [59.9139, 10.7522],
+  'cc vest': [59.9295, 10.6403],
+  'lilleakerveien': [59.9295, 10.6403],
+  'tusenfryd': [59.7861, 10.8197],
+  'vinterbro': [59.7861, 10.8197],
+  'frognerparken': [59.9270, 10.6994],
+  'frognerbadet': [59.9244, 10.6948],
+  'tj': [59.9139, 10.7522],
+  // Andre byer
+  'bergen': [60.3913, 5.3221],
+  'trondheim': [63.4305, 10.3951],
+  'stavanger': [58.9700, 5.7331],
+  'tromsø': [69.6492, 18.9553],
+  'kristiansand': [58.1467, 7.9956],
+  'drammen': [59.7440, 10.2045],
+  'fredrikstad': [59.2181, 10.9298],
+  'bodø': [67.2804, 14.4049],
+  'ålesund': [62.4722, 6.1549],
+  'haugesund': [59.4135, 5.2680],
+  'hamar': [60.7945, 11.0675],
+  'lillehammer': [61.1153, 10.4662],
+  'moss': [59.4343, 10.6578],
+  'sarpsborg': [59.2841, 11.1099],
+  'halden': [59.1220, 11.3878],
+  'jessheim': [60.1426, 11.1731],
+  'lillestrøm': [59.9561, 11.0498],
+  'ski': [59.7236, 10.8367],
+}
+
+function getCoords(location: string): [number, number] {
+  const lower = location.toLowerCase()
+  for (const [key, coords] of Object.entries(COORDS)) {
+    if (lower.includes(key)) return coords
+  }
+  return [59.9139, 10.7522] // fallback: Oslo sentrum
+}
+
+// ─── Tilpass kart-bounds til markørene ───────────────────────────────────────
+function FitBounds({ from, to }: { from: [number, number]; to: [number, number] }) {
+  const map = useMap()
+  useEffect(() => {
+    const bounds = L.latLngBounds([from, to])
+    map.fitBounds(bounds, { padding: [48, 48] })
+  }, [from[0], from[1], to[0], to[1]])
+  return null
+}
 
 export default function TravelRoute() {
   const { id } = useParams()
@@ -12,13 +94,11 @@ export default function TravelRoute() {
   const activity = activities.find((a) => a.id === id)
   const routes = TRAVEL_ROUTES[id as keyof typeof TRAVEL_ROUTES]
   const [selectedOption, setSelectedOption] = useState(0)
-  const [animProgress, setAnimProgress] = useState(0)
-  const animRef = useRef<number>(0)
 
   if (!activity || !currentUser) return null
 
   const fromCity = currentUser.area.split(',')[0].trim()
-  const toCity = (activity.location || activity.address || 'Destinasjonen').split(',')[0].trim()
+  const toCity = (activity.location || activity.address || 'Oslo').split(',')[0].trim()
   const isSameCity = fromCity.toLowerCase() === toCity.toLowerCase()
 
   const routeData = routes || {
@@ -33,16 +113,8 @@ export default function TravelRoute() {
         arrival: isSameCity ? '13:20' : '14:45',
         price: isSameCity ? 40 : 249,
         steps: isSameCity
-          ? [
-              `Gå til nærmeste holdeplass i ${fromCity}`,
-              `Ta bussen mot ${toCity}`,
-              `Gå til ${activity.title}`,
-            ]
-          : [
-              `Gå til togstasjonen i ${fromCity}`,
-              `Ta toget til ${toCity} (ca. 1 t 30 min)`,
-              `Ta buss eller drosje til ${activity.title}`,
-            ],
+          ? [`Gå til nærmeste holdeplass i ${fromCity}`, `Ta bussen mot ${toCity}`, `Gå til ${activity.title}`]
+          : [`Gå til togstasjonen i ${fromCity}`, `Ta toget til ${toCity} (ca. 1 t 30 min)`, `Ta buss eller drosje til ${activity.title}`],
       },
       {
         type: 'Bil',
@@ -53,42 +125,21 @@ export default function TravelRoute() {
         price: 0,
         steps: isSameCity
           ? [`Kjør mot ${toCity} sentrum`, `Følg veien til ${activity.title}`]
-          : [
-              `Kjør ut av ${fromCity}`,
-              `Ta E6 / riksveien mot ${toCity}`,
-              `Følg skilting til ${activity.title}`,
-            ],
+          : [`Kjør ut av ${fromCity}`, `Ta E6 / riksveien mot ${toCity}`, `Følg skilting til ${activity.title}`],
       },
     ],
   }
 
   const selected = routeData.options[selectedOption]
 
-  // Animer ruten når transportvalg endres
-  useEffect(() => {
-    setAnimProgress(0)
-    const start = performance.now()
-    const duration = 1800
-
-    const animate = (now: number) => {
-      const p = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - p, 2)
-      setAnimProgress(eased)
-      if (p < 1) animRef.current = requestAnimationFrame(animate)
-    }
-    animRef.current = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(animRef.current)
-  }, [selectedOption])
-
-  // Rutens kontrollpunkter (kurvet vei)
-  const routePath = "M 60 160 C 100 120, 160 90, 220 100 C 280 110, 320 70, 360 50"
-  const totalLength = 380 // estimert stiplingslengde
+  const fromCoords = getCoords(routeData.from)
+  const toCoords = getCoords(routeData.to)
 
   const transportColor: Record<string, string> = {
     'Kollektivt': '#6366F1',
-    'Sykkel':     '#10B981',
-    'Gange':      '#F59E0B',
-    'Bil':        '#EF4444',
+    'Sykkel': '#10B981',
+    'Gange': '#F59E0B',
+    'Bil': '#EF4444',
   }
   const lineColor = transportColor[selected.type] ?? '#6366F1'
 
@@ -96,91 +147,47 @@ export default function TravelRoute() {
     <div className="min-h-dvh pb-10">
       <Header title="Reiserute" />
 
-      {/* ─── Kart ─── */}
-      <div className="relative bg-[#EAF2E8] overflow-hidden" style={{ height: 260 }}>
-
-        {/* Kartbakgrunn: gatenett */}
-        <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 420 260" preserveAspectRatio="none">
-          {/* Horisontale gater */}
-          {[40,80,120,160,200,240].map((y) => (
-            <line key={y} x1="0" y1={y} x2="420" y2={y} stroke="#888" strokeWidth="1" />
-          ))}
-          {/* Vertikale gater */}
-          {[60,120,180,240,300,360].map((x) => (
-            <line key={x} x1={x} y1="0" x2={x} y2="260" stroke="#888" strokeWidth="1" />
-          ))}
-          {/* Litt bredere "hovedveier" */}
-          <line x1="0" y1="100" x2="420" y2="100" stroke="#aaa" strokeWidth="3" />
-          <line x1="180" y1="0" x2="180" y2="260" stroke="#aaa" strokeWidth="3" />
-          {/* Grøntareal */}
-          <rect x="240" y="130" width="80" height="60" rx="8" fill="#C6E6C3" />
-          <rect x="60" y="30" width="60" height="40" rx="6" fill="#C6E6C3" />
-        </svg>
-
-        {/* Animert rutelinje */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 420 260">
-          {/* Hvit bakgrunnslinje (veien) */}
-          <path d={routePath} stroke="white" strokeWidth="10" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          {/* Farget rute, animert med stroke-dasharray */}
-          <path
-            d={routePath}
-            stroke={lineColor}
-            strokeWidth="5"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeDasharray={`${animProgress * totalLength} ${totalLength}`}
-            opacity="0.9"
+      {/* ─── OpenStreetMap ─── */}
+      <div style={{ height: 260 }} className="relative">
+        <MapContainer
+          center={fromCoords}
+          zoom={12}
+          style={{ height: '100%', width: '100%' }}
+          zoomControl={false}
+          scrollWheelZoom={false}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
 
-          {/* Startpunkt — grønn sirkel */}
-          <circle cx="60" cy="160" r="10" fill="#22C55E" stroke="white" strokeWidth="3" />
-          <text x="60" y="165" textAnchor="middle" fontSize="10" fill="white" fontWeight="bold">A</text>
+          {/* Tilpass bounds automatisk */}
+          <FitBounds from={fromCoords} to={toCoords} />
 
-          {/* Endepunkt — rosa pin */}
-          <circle cx="360" cy="50" r="12" fill="#EC4899" stroke="white" strokeWidth="3" />
-          <text x="360" y="55" textAnchor="middle" fontSize="10" fill="white" fontWeight="bold">B</text>
+          {/* Rute-linje */}
+          <Polyline
+            positions={[fromCoords, toCoords]}
+            pathOptions={{ color: lineColor, weight: 5, opacity: 0.85, dashArray: selected.type === 'Kollektivt' ? '10 6' : undefined }}
+          />
 
-          {/* Bevegelig ikon langs ruten */}
-          {animProgress > 0.05 && (
-            <text
-              fontSize="18"
-              textAnchor="middle"
-              style={{
-                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
-              }}
-            >
-              <animateMotion dur="0s" fill="freeze">
-                <mpath href="#routePath" />
-              </animateMotion>
-              <textPath href="#routePathDef" startOffset={`${animProgress * 95}%`}>
-                {selected.type === 'Sykkel' ? '🚲' : selected.type === 'Gange' ? '🚶' : '🚌'}
-              </textPath>
-            </text>
-          )}
-        </svg>
+          {/* Startpunkt A */}
+          <Marker position={fromCoords} icon={startIcon}>
+            <Popup>{routeData.from}</Popup>
+          </Marker>
 
-        {/* Start-label */}
-        <div className="absolute left-3 bottom-3 bg-white rounded-xl px-3 py-1.5 shadow text-xs font-medium flex items-center gap-1.5 max-w-[45%]">
-          <span className="w-2.5 h-2.5 bg-green-500 rounded-full flex-shrink-0" />
-          <span className="truncate">{routeData.from}</span>
-        </div>
+          {/* Endepunkt B */}
+          <Marker position={toCoords} icon={endIcon}>
+            <Popup>{routeData.to}</Popup>
+          </Marker>
+        </MapContainer>
 
-        {/* Mål-label */}
-        <div className="absolute right-3 top-3 bg-white rounded-xl px-3 py-1.5 shadow text-xs font-medium flex items-center gap-1.5 max-w-[45%]">
-          <span className="w-2.5 h-2.5 bg-pink-500 rounded-full flex-shrink-0" />
-          <span className="truncate">{routeData.to}</span>
-        </div>
-
-        {/* Avstand */}
-        <div className="absolute left-3 top-3 bg-white/90 rounded-xl px-2.5 py-1 text-xs text-gray-600 flex items-center gap-1 shadow">
-          <Navigation size={11} className="text-indigo-500" />
-          {activity.distance} km
+        {/* Avstand-badge */}
+        <div className="absolute top-2 left-2 z-[1000] bg-white/90 rounded-xl px-2.5 py-1 text-xs text-gray-600 flex items-center gap-1 shadow">
+          📍 {activity.distance ?? '?'} km
         </div>
       </div>
 
       <div className="px-4 py-4 space-y-4">
-
         {/* Transportvalg */}
         <div className="flex gap-2">
           {routeData.options.map((opt, i) => (
@@ -231,7 +238,6 @@ export default function TravelRoute() {
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4">Veibeskrivelse</h3>
 
-          {/* Startpunkt */}
           <div className="flex items-start gap-3 mb-1">
             <div className="flex flex-col items-center">
               <div className="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -245,7 +251,6 @@ export default function TravelRoute() {
             </div>
           </div>
 
-          {/* Steg */}
           {selected.steps.map((step, i) => (
             <div key={i} className="flex items-start gap-3 mb-1">
               <div className="flex flex-col items-center">
@@ -258,7 +263,6 @@ export default function TravelRoute() {
             </div>
           ))}
 
-          {/* Endepunkt */}
           <div className="flex items-start gap-3">
             <div className="w-7 h-7 bg-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-white text-xs font-bold">B</span>
