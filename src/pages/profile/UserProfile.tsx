@@ -41,7 +41,13 @@ export default function UserProfile() {
       {/* Hero */}
       <div className="bg-gradient-to-br from-pink-400 to-purple-500 px-4 pt-6 pb-8 text-white">
         <div className="flex items-center gap-4">
-          <Avatar initial={user.avatar} size="lg" index={userIndex} />
+          {user.photoUrl ? (
+            <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-white/40 flex-shrink-0">
+              <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <Avatar initial={user.avatar} size="lg" index={userIndex} />
+          )}
           <div>
             <h1 className="text-2xl font-black">{user.name}</h1>
             <p className="text-white/70 text-sm font-medium mt-0.5">@{user.username}</p>

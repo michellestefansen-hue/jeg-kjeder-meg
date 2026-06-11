@@ -14,6 +14,7 @@ interface AppState {
   register: (name: string, username: string, age: number, area: string) => void
   addFriend: (userId: string) => void
   updateProfile: (updates: Partial<{ name: string; area: string }>) => void
+  updateProfilePhoto: (photoUrl: string) => void
 
   // Venneforespørsler
   friendRequests: string[]   // bruker-IDer som har sendt forespørsel til meg
@@ -80,6 +81,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     const { currentUser } = get()
     if (!currentUser) return
     set({ currentUser: { ...currentUser, ...updates } })
+  },
+
+  updateProfilePhoto: (photoUrl) => {
+    const { currentUser } = get()
+    if (!currentUser) return
+    set({ currentUser: { ...currentUser, photoUrl } })
   },
 
   register: (name, username, age, area) => {

@@ -21,9 +21,20 @@ export default function Profile() {
       {/* Header */}
       <div className="px-4 pt-12 pb-8 text-white" style={{ backgroundColor: bannerColor }}>
         <div className="flex items-center gap-4">
-          <div className="w-18 h-18 bg-white/20 rounded-full flex items-center justify-center">
-            <span className="text-4xl font-black text-white">{currentUser.avatar}</span>
-          </div>
+          <button onClick={() => navigate('/edit-profile')} className="relative flex-shrink-0">
+            <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/40">
+              {currentUser.photoUrl ? (
+                <img src={currentUser.photoUrl} alt="Profil" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-white/20 flex items-center justify-center">
+                  <span className="text-3xl font-black text-white">{currentUser.avatar}</span>
+                </div>
+              )}
+            </div>
+            <div className="absolute bottom-0 right-0 w-5 h-5 bg-pink-400 rounded-full flex items-center justify-center border-2 border-white">
+              <span className="text-[9px] text-white font-bold">✏️</span>
+            </div>
+          </button>
           <div>
             <h1 className="text-2xl font-black">{currentUser.name}</h1>
             <p className="text-white/70 text-sm font-medium mt-0.5">@{currentUser.username}</p>

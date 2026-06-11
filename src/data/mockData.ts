@@ -8,6 +8,7 @@ export interface User {
   area: string
   avatar: string
   friends: string[]
+  photoUrl?: string
 }
 
 export interface Activity {

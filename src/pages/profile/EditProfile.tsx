@@ -1,11 +1,10 @@
 // ─── Rediger profil ───────────────────────────────────────────────────────────
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, X, Check } from 'lucide-react'
+import { MapPin, X, Check, Camera } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import Header from '../../components/layout/Header'
 import Button from '../../components/ui/Button'
-import Avatar from '../../components/ui/Avatar'
 
 const COUNTRIES: Record<string, { flag: string; cities: string[] }> = {
   Norge: {
@@ -46,16 +45,30 @@ const COUNTRIES: Record<string, { flag: string; cities: string[] }> = {
 
 export default function EditProfile() {
   const navigate = useNavigate()
-  const { currentUser, updateProfile } = useAppStore()
+  const { currentUser, updateProfile, updateProfilePhoto } = useAppStore()
   if (!currentUser) { navigate('/'); return null }
 
   const [name, setName] = useState(currentUser.name)
   const [area, setArea] = useState(currentUser.area)
   const [showLocationPanel, setShowLocationPanel] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [photoUrl, setPhotoUrl] = useState(currentUser.photoUrl ?? '')
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string
+      setPhotoUrl(result)
+    }
+    reader.readAsDataURL(file)
+  }
 
   const handleSave = () => {
     updateProfile({ name: name.trim() || currentUser.name, area })
+    if (photoUrl !== currentUser.photoUrl) updateProfilePhoto(photoUrl)
     setSaved(true)
     setTimeout(() => navigate('/profile'), 800)
   }
@@ -77,11 +90,43 @@ export default function EditProfile() {
       <Header title="Rediger profil" />
 
       <div className="flex-1 p-5 space-y-6">
-        {/* Avatar */}
-        <div className="flex justify-center pt-2">
-          <div className="relative">
-            <Avatar initial={name[0]?.toUpperCase() || '?'} size="lg" />
-          </div>
+        {/* Profilbilde */}
+        <div className="flex flex-col items-center pt-2 gap-2">
+          <button onClick={() => fileRef.current?.click()} className="relative group">
+            <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-pink-200">
+              {photoUrl ? (
+                <img src={photoUrl} alt="Profilbilde" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-3xl font-black text-white">
+                  {name[0]?.toUpperCase() || '?'}
+                </div>
+              )}
+            </div>
+            {/* Kamera-overlay */}
+            <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity">
+              <Camera size={22} className="text-white" />
+            </div>
+            <div className="absolute bottom-0 right-0 w-7 h-7 bg-pink-500 rounded-full flex items-center justify-center border-2 border-white shadow">
+              <Camera size={13} className="text-white" />
+            </div>
+          </button>
+          <p className="text-xs text-gray-400">Trykk for å bytte bilde</p>
+
+          {/* Skjult fil-input */}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
+
+          {/* Fjern bilde */}
+          {photoUrl && (
+            <button onClick={() => setPhotoUrl('')} className="text-xs text-red-400 font-medium">
+              Fjern profilbilde
+            </button>
+          )}
         </div>
 
         {/* Navn */}
