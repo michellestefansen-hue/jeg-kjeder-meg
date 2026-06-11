@@ -15,6 +15,13 @@ interface AppState {
   addFriend: (userId: string) => void
   updateProfile: (updates: Partial<{ name: string; area: string }>) => void
 
+  // Venneforespørsler
+  friendRequests: string[]   // bruker-IDer som har sendt forespørsel til meg
+  sentRequests: string[]     // bruker-IDer jeg har sendt forespørsel til
+  sendFriendRequest: (userId: string) => void
+  acceptFriendRequest: (userId: string) => void
+  declineFriendRequest: (userId: string) => void
+
   // Aktiviteter
   activities: Activity[]
   joinActivity: (activityId: string) => void
@@ -91,8 +98,38 @@ export const useAppStore = create<AppState>((set, get) => ({
   addFriend: (userId) => {
     const { currentUser } = get()
     if (!currentUser || currentUser.friends.includes(userId)) return
-    if (currentUser.friends.length >= 150) return // maks 150 venner
+    if (currentUser.friends.length >= 150) return
     set({ currentUser: { ...currentUser, friends: [...currentUser.friends, userId] } })
+  },
+
+  // ─── Venneforespørsler ────────────────────────────────────────────────────
+  friendRequests: ['u4', 'u5'], // mock: Ida og Thea har sendt forespørsel
+  sentRequests: [],
+
+  sendFriendRequest: (userId) => {
+    const { currentUser, sentRequests, friendRequests } = get()
+    if (!currentUser) return
+    if (currentUser.friends.includes(userId)) return
+    if (sentRequests.includes(userId)) return
+    // Hvis de allerede har sendt forespørsel til meg — godta automatisk
+    if (friendRequests.includes(userId)) {
+      get().acceptFriendRequest(userId)
+      return
+    }
+    set({ sentRequests: [...sentRequests, userId] })
+  },
+
+  acceptFriendRequest: (userId) => {
+    const { currentUser, friendRequests } = get()
+    if (!currentUser) return
+    set({
+      currentUser: { ...currentUser, friends: [...currentUser.friends, userId] },
+      friendRequests: friendRequests.filter((id) => id !== userId),
+    })
+  },
+
+  declineFriendRequest: (userId) => {
+    set((s) => ({ friendRequests: s.friendRequests.filter((id) => id !== userId) }))
   },
 
   // ─── Aktiviteter ─────────────────────────────────────────────────────────

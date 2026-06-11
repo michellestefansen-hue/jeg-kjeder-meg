@@ -35,6 +35,7 @@ import EditProfile from './pages/profile/EditProfile'
 import UserProfile from './pages/profile/UserProfile'
 import Privacy from './pages/profile/Privacy'
 import AddFriends from './pages/profile/AddFriends'
+import FriendRequests from './pages/profile/FriendRequests'
 import Messages from './pages/chat/Messages'
 import DirectChat from './pages/chat/DirectChat'
 import CreateGroup from './pages/chat/CreateGroup'
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
             <Route path="/add-friends" element={<ProtectedRoute><AddFriends /></ProtectedRoute>} />
+            <Route path="/friend-requests" element={<ProtectedRoute><FriendRequests /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/direct/:userId" element={<ProtectedRoute><DirectChat /></ProtectedRoute>} />
             <Route path="/create-group" element={<ProtectedRoute><CreateGroup /></ProtectedRoute>} />

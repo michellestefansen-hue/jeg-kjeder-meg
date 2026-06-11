@@ -9,7 +9,7 @@ import { USERS } from '../../data/mockData'
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { currentUser, activities, logout, bgColor, setBgColor, bannerColor, setBannerColor, blockedUsers } = useAppStore()
+  const { currentUser, activities, logout, bgColor, setBgColor, bannerColor, setBannerColor, blockedUsers, friendRequests } = useAppStore()
   if (!currentUser) { navigate('/'); return null }
 
   const myActivities = activities.filter((a) => a.participants.includes(currentUser.id))
@@ -47,12 +47,26 @@ export default function Profile() {
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-gray-800">👯 Venner</h3>
-            <button
-              onClick={() => navigate('/add-friends')}
-              className="flex items-center gap-1 text-xs font-semibold text-pink-500 bg-pink-50 px-3 py-1.5 rounded-full"
-            >
-              + Legg til
-            </button>
+            <div className="flex gap-2">
+              {/* Forespørsler-knapp med badge */}
+              <button
+                onClick={() => navigate('/friend-requests')}
+                className="relative flex items-center gap-1 text-xs font-semibold text-purple-500 bg-purple-50 px-3 py-1.5 rounded-full"
+              >
+                Forespørsler
+                {friendRequests.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-pink-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                    {friendRequests.length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => navigate('/add-friends')}
+                className="flex items-center gap-1 text-xs font-semibold text-pink-500 bg-pink-50 px-3 py-1.5 rounded-full"
+              >
+                + Legg til
+              </button>
+            </div>
           </div>
           <div className="space-y-2">
             {friends.map((friend, i) => (

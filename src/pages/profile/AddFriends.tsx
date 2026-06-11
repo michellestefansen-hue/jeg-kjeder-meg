@@ -1,7 +1,7 @@
 // ─── Legg til venner via brukernavn ──────────────────────────────────────────
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, UserPlus, UserCheck, X } from 'lucide-react'
+import { Search, UserPlus, UserCheck, Clock, X } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { USERS } from '../../data/mockData'
 import Avatar from '../../components/ui/Avatar'
@@ -9,9 +9,8 @@ import Header from '../../components/layout/Header'
 
 export default function AddFriends() {
   const navigate = useNavigate()
-  const { currentUser, addFriend, blockedUsers } = useAppStore()
+  const { currentUser, sendFriendRequest, sentRequests, blockedUsers } = useAppStore()
   const [query, setQuery] = useState('')
-  const [justAdded, setJustAdded] = useState<string[]>([])
 
   if (!currentUser) return null
 
@@ -28,14 +27,11 @@ export default function AddFriends() {
 
   const atLimit = currentUser.friends.length >= 150
 
-  const handleAdd = (userId: string) => {
-    if (atLimit) return
-    addFriend(userId)
-    setJustAdded((prev) => [...prev, userId])
+  const getStatus = (userId: string) => {
+    if (currentUser.friends.includes(userId)) return 'friend'
+    if (sentRequests.includes(userId)) return 'sent'
+    return 'none'
   }
-
-  const isFriend = (userId: string) =>
-    currentUser.friends.includes(userId) || justAdded.includes(userId)
 
   return (
     <div className="min-h-dvh">
@@ -87,7 +83,7 @@ export default function AddFriends() {
         {results.length > 0 && (
           <div className="space-y-2">
             {results.map((user, i) => {
-              const already = isFriend(user.id)
+              const status = getStatus(user.id)
               return (
                 <div key={user.id} className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
                   <button onClick={() => navigate(`/user/${user.id}`)}>
@@ -99,18 +95,17 @@ export default function AddFriends() {
                     <p className="text-xs text-gray-400 mt-0.5">{user.area}</p>
                   </button>
                   <button
-                    onClick={() => !already && handleAdd(user.id)}
+                    onClick={() => status === 'none' && !atLimit && sendFriendRequest(user.id)}
+                    disabled={status !== 'none' || atLimit}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                      already
-                        ? 'bg-green-50 text-green-600 border border-green-200'
-                        : 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
+                      status === 'friend' ? 'bg-green-50 text-green-600 border border-green-200' :
+                      status === 'sent'   ? 'bg-gray-100 text-gray-400 border border-gray-200' :
+                      'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
                     }`}
                   >
-                    {already ? (
-                      <><UserCheck size={14} /> Venner</>
-                    ) : (
-                      <><UserPlus size={14} /> Legg til</>
-                    )}
+                    {status === 'friend' ? <><UserCheck size={14} /> Venner</> :
+                     status === 'sent'   ? <><Clock size={14} /> Sendt</> :
+                     <><UserPlus size={14} /> Send</>}
                   </button>
                 </div>
               )
