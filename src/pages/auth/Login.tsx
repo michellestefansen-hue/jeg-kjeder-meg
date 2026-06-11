@@ -1,105 +1,64 @@
-// ─── Innloggingsside med Supabase ─────────────────────────────────────────────
 import { useState } from 'react'
-import Button from '../../components/ui/Button'
-import Header from '../../components/layout/Header'
-import { loginUser, sendPasswordReset } from '../../lib/auth'
+import { supabase } from '../../lib/supabase'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [resetSent, setResetSent] = useState(false)
 
   const handleLogin = async () => {
-    // Les verdier fra DOM direkte for å håndtere autofyll
-    const emailVal = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value || email
-    const passwordVal = (document.querySelector('input[type="password"]') as HTMLInputElement)?.value || password
-    if (emailVal) setEmail(emailVal)
-    if (passwordVal) setPassword(passwordVal)
-    if (!emailVal || !passwordVal) { setError('Fyll inn e-post og passord'); return }
-    setLoading(true)
     setError('')
-    try {
-      await loginUser(emailVal, passwordVal)
-      window.location.replace('/home')
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e)
-      setError(msg)
-    } finally {
+    setLoading(true)
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      setError(error.message)
       setLoading(false)
-    }
-  }
-
-  const handleForgotPassword = async () => {
-    if (!email) { setError('Skriv inn e-posten din først'); return }
-    try {
-      await sendPasswordReset(email)
-      setResetSent(true)
-    } catch {
-      setError('Kunne ikke sende tilbakestillingslenke')
+    } else {
+      window.location.replace('/home')
     }
   }
 
   return (
-    <div className="min-h-dvh flex flex-col">
-      <Header title="Logg inn" />
-      <div className="flex-1 p-6 flex flex-col gap-6 justify-center">
-        <div className="text-center">
-          <div className="text-5xl mb-3">📍</div>
-          <h2 className="text-2xl font-bold text-gray-900">Velkommen tilbake!</h2>
-          <p className="text-gray-500 mt-1">Logg inn for å se hva som skjer</p>
-        </div>
+    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', padding: '24px' }}>
+      <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px' }}>Logg inn</h1>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-sm text-red-600 text-center">
-            {error}
-          </div>
-        )}
-
-        {resetSent && (
-          <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 text-sm text-green-600 text-center">
-            ✓ Sjekk e-posten din for tilbakestillingslenke
-          </div>
-        )}
-
-        <div>
-          <label className="text-sm font-medium text-gray-600 mb-2 block">E-postadresse</label>
-          <input
-            type="email"
-            placeholder="din@epost.no"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
-          />
+      {error && (
+        <div style={{ background: '#fee2e2', color: '#dc2626', padding: '12px', borderRadius: '12px', marginBottom: '16px' }}>
+          {error}
         </div>
-        <div>
-          <label className="text-sm font-medium text-gray-600 mb-2 block">Passord</label>
-          <input
-            type="password"
-            placeholder="Passordet ditt"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-            className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
-          />
-        </div>
-        <Button
-          variant="primary"
-          fullWidth
-          size="lg"
-          disabled={loading}
-          onClick={handleLogin}
-        >
-          {loading ? 'Logger inn...' : 'Logg inn'}
-        </Button>
-        <button
-          onClick={handleForgotPassword}
-          className="text-center text-pink-500 text-sm font-medium"
-        >
-          Glemt passord?
-        </button>
-      </div>
+      )}
+
+      <label style={{ fontSize: '14px', color: '#6b7280', marginBottom: '6px' }}>E-post</label>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="din@epost.no"
+        style={{ padding: '14px', borderRadius: '16px', border: '2px solid #f3f4f6', fontSize: '16px', marginBottom: '16px', background: '#f9fafb' }}
+      />
+
+      <label style={{ fontSize: '14px', color: '#6b7280', marginBottom: '6px' }}>Passord</label>
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Passordet ditt"
+        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+        style={{ padding: '14px', borderRadius: '16px', border: '2px solid #f3f4f6', fontSize: '16px', marginBottom: '24px', background: '#f9fafb' }}
+      />
+
+      <button
+        onClick={handleLogin}
+        disabled={loading}
+        style={{ padding: '16px', borderRadius: '16px', background: 'linear-gradient(to right, #ec4899, #8b5cf6)', color: 'white', fontSize: '16px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+      >
+        {loading ? 'Logger inn...' : 'Logg inn'}
+      </button>
+
+      <a href="/register" style={{ textAlign: 'center', marginTop: '16px', color: '#ec4899', fontSize: '14px' }}>
+        Har ikke konto? Registrer deg
+      </a>
     </div>
   )
 }
