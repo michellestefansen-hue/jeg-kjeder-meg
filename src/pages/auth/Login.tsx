@@ -12,48 +12,60 @@ export default function Login() {
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Naviger til hjem ETTER at isLoggedIn er satt i React-treet
+  // Naviger til hjem ETTER at React har rendret isLoggedIn=true
   useEffect(() => {
-    if (isLoggedIn) {
-      navigate('/home', { replace: true })
-    }
+    if (isLoggedIn) navigate('/home', { replace: true })
   }, [isLoggedIn])
 
   const handleLogin = async () => {
-    if (!email || !password) { setMsg('Fyll inn e-post og passord'); return }
+    const e = email.trim()
+    const p = password
+
+    if (!e || !p) {
+      setMsg('Fyll inn e-post og passord')
+      return
+    }
+
     setMsg('')
     setLoading(true)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: e,
+        password: p,
+      })
 
       if (error) {
-        setMsg(error.message)
+        setMsg(`Feil: ${error.message}`)
         setLoading(false)
         return
       }
 
-      const user = data.user
-      if (!user) { setMsg('Ingen bruker funnet'); setLoading(false); return }
+      if (!data.user) {
+        setMsg('Ingen bruker funnet. Prøv igjen.')
+        setLoading(false)
+        return
+      }
 
-      // Hent profil
+      // Hent profil (ignorerer feil — bruker fallback)
       let profile = null
-      try { profile = await getProfile(user.id) } catch { /* profil mangler */ }
+      try { profile = await getProfile(data.user.id) } catch { /* ingen profil */ }
 
-      // Sett bruker i store — useEffect over vil navigere etter re-render
       login({
-        id: user.id,
-        name: profile?.name ?? email.split('@')[0],
-        username: profile?.username ?? email.split('@')[0],
+        id: data.user.id,
+        name: profile?.name ?? e.split('@')[0],
+        username: profile?.username ?? e.split('@')[0],
         age: profile?.age ?? 14,
         area: profile?.area ?? 'Norge',
-        avatar: (profile?.name?.[0] ?? email[0]).toUpperCase(),
+        avatar: (profile?.name?.[0] ?? e[0]).toUpperCase(),
         friends: profile?.friends ?? [],
         photoUrl: profile?.photo_url,
         vippsNumber: profile?.vipps_number,
       })
-    } catch (e: unknown) {
-      setMsg(e instanceof Error ? e.message : 'Noe gikk galt')
+      // useEffect over navigerer når isLoggedIn blir true
+
+    } catch (err: unknown) {
+      setMsg(`Uventet feil: ${err instanceof Error ? err.message : String(err)}`)
       setLoading(false)
     }
   }
@@ -67,22 +79,22 @@ export default function Login() {
       </div>
 
       {msg && (
-        <div style={{ background: '#fee2e2', color: '#dc2626', padding: '12px', borderRadius: '12px', marginBottom: '16px', fontSize: '14px', textAlign: 'center' }}>
+        <div style={{ background: '#fee2e2', color: '#dc2626', padding: '12px', borderRadius: '12px', marginBottom: '16px', fontSize: '14px', textAlign: 'center', fontWeight: '500' }}>
           {msg}
         </div>
       )}
 
-      <label style={{ fontSize: '14px', fontWeight: '500', color: '#6b7280', marginBottom: '6px' }}>E-post</label>
+      <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>E-post</label>
       <input
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="din@epost.no"
         autoComplete="email"
-        style={{ padding: '14px', borderRadius: '16px', border: '2px solid #f3f4f6', fontSize: '16px', marginBottom: '16px', background: '#f9fafb', outline: 'none' }}
+        style={{ padding: '14px', borderRadius: '16px', border: '2px solid #e5e7eb', fontSize: '16px', marginBottom: '16px', background: '#f9fafb', outline: 'none', width: '100%', boxSizing: 'border-box' }}
       />
 
-      <label style={{ fontSize: '14px', fontWeight: '500', color: '#6b7280', marginBottom: '6px' }}>Passord</label>
+      <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Passord</label>
       <input
         type="password"
         value={password}
@@ -90,18 +102,18 @@ export default function Login() {
         placeholder="Passordet ditt"
         autoComplete="current-password"
         onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-        style={{ padding: '14px', borderRadius: '16px', border: '2px solid #f3f4f6', fontSize: '16px', marginBottom: '24px', background: '#f9fafb', outline: 'none' }}
+        style={{ padding: '14px', borderRadius: '16px', border: '2px solid #e5e7eb', fontSize: '16px', marginBottom: '24px', background: '#f9fafb', outline: 'none', width: '100%', boxSizing: 'border-box' }}
       />
 
       <button
         onClick={handleLogin}
         disabled={loading}
-        style={{ padding: '16px', borderRadius: '16px', background: loading ? '#d1d5db' : 'linear-gradient(to right, #ec4899, #8b5cf6)', color: 'white', fontSize: '16px', fontWeight: 'bold', border: 'none', cursor: loading ? 'not-allowed' : 'pointer' }}
+        style={{ padding: '16px', borderRadius: '16px', background: loading ? '#9ca3af' : 'linear-gradient(to right, #ec4899, #8b5cf6)', color: 'white', fontSize: '16px', fontWeight: 'bold', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', width: '100%' }}
       >
         {loading ? 'Logger inn...' : 'Logg inn'}
       </button>
 
-      <a href="/register" style={{ textAlign: 'center', marginTop: '16px', color: '#ec4899', fontSize: '14px' }}>
+      <a href="/register" style={{ textAlign: 'center', marginTop: '16px', color: '#ec4899', fontSize: '14px', display: 'block' }}>
         Har ikke konto? Registrer deg
       </a>
     </div>

@@ -1,5 +1,5 @@
 // ─── Registreringsside ────────────────────────────────────────────────────────
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, X } from 'lucide-react'
 import Button from '../../components/ui/Button'
@@ -10,7 +10,12 @@ import { useAppStore } from '../../store/useAppStore'
 
 export default function Register() {
   const navigate = useNavigate()
-  const login = useAppStore((s) => s.login)
+  const { login, isLoggedIn } = useAppStore()
+
+  // Naviger til hjem ETTER at isLoggedIn er satt i React-treet
+  useEffect(() => {
+    if (isLoggedIn) navigate('/home', { replace: true })
+  }, [isLoggedIn])
 
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
@@ -45,7 +50,7 @@ export default function Register() {
           friends: [],
         })
       }
-      window.location.href = '/home'
+      // useEffect navigerer når isLoggedIn blir true
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Noe gikk galt'
       setError(msg.includes('already') ? 'E-posten er allerede i bruk' : msg)
