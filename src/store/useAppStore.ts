@@ -61,10 +61,20 @@ interface AppState {
   markRead: (userId: string) => void
 
   // Gruppechat
-  groupChats: Record<string, { name: string; emoji: string; members: string[]; messages: { id: string; from: string; text: string; time: string }[]; unread: number }>
+  groupChats: Record<string, {
+    name: string; emoji: string; members: string[]
+    messages: { id: string; from: string; text: string; time: string }[]
+    unread: number
+    kasse: number                                   // felles pengekasse i kr
+    todos: { id: string; text: string; done: boolean; addedBy: string }[]
+  }>
   createGroup: (name: string, emoji: string, memberIds: string[]) => string
   sendGroupMessage: (groupId: string, text: string) => void
   markGroupRead: (groupId: string) => void
+  addToGroupKasse: (groupId: string, amount: number) => void
+  addGroupTodo: (groupId: string, text: string) => void
+  toggleGroupTodo: (groupId: string, todoId: string) => void
+  removeGroupTodo: (groupId: string, todoId: string) => void
 
   // Tema
   bgColor: string
@@ -279,7 +289,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((s) => ({
       groupChats: {
         ...s.groupChats,
-        [id]: { name, emoji, members: [currentUser.id, ...memberIds], messages: [], unread: 0 },
+        [id]: { name, emoji, members: [currentUser.id, ...memberIds], messages: [], unread: 0, kasse: 0, todos: [] },
       },
     }))
     return id
@@ -292,18 +302,44 @@ export const useAppStore = create<AppState>((set, get) => ({
     const msg = { id: `gm_${Date.now()}`, from: currentUser.id, text, time }
     const existing = groupChats[groupId]
     if (!existing) return
-    set((s) => ({
-      groupChats: {
-        ...s.groupChats,
-        [groupId]: { ...existing, messages: [...existing.messages, msg] },
-      },
-    }))
+    set((s) => ({ groupChats: { ...s.groupChats, [groupId]: { ...existing, messages: [...existing.messages, msg] } } }))
   },
   markGroupRead: (groupId) => {
     set((s) => {
       const g = s.groupChats[groupId]
       if (!g) return s
       return { groupChats: { ...s.groupChats, [groupId]: { ...g, unread: 0 } } }
+    })
+  },
+  addToGroupKasse: (groupId, amount) => {
+    set((s) => {
+      const g = s.groupChats[groupId]
+      if (!g) return s
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, kasse: g.kasse + amount } } }
+    })
+  },
+  addGroupTodo: (groupId, text) => {
+    const { currentUser } = get()
+    if (!currentUser) return
+    set((s) => {
+      const g = s.groupChats[groupId]
+      if (!g) return s
+      const todo = { id: `t_${Date.now()}`, text, done: false, addedBy: currentUser.id }
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, todos: [...g.todos, todo] } } }
+    })
+  },
+  toggleGroupTodo: (groupId, todoId) => {
+    set((s) => {
+      const g = s.groupChats[groupId]
+      if (!g) return s
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, todos: g.todos.map((t) => t.id === todoId ? { ...t, done: !t.done } : t) } } }
+    })
+  },
+  removeGroupTodo: (groupId, todoId) => {
+    set((s) => {
+      const g = s.groupChats[groupId]
+      if (!g) return s
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, todos: g.todos.filter((t) => t.id !== todoId) } } }
     })
   },
 

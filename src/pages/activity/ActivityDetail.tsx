@@ -184,24 +184,6 @@ export default function ActivityDetail() {
           </button>
         )}
 
-        {/* Avstemming / forslag */}
-        {(activity.suggestions.length > 0 || activity.allowSuggestions) && (
-          <button
-            onClick={() => navigate(`/voting/${activity.id}`)}
-            className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-yellow-50 rounded-full flex items-center justify-center">
-                <span className="text-base">🗳️</span>
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-semibold text-gray-800">Forslag & avstemming</p>
-                <p className="text-xs text-gray-400">{activity.suggestions.length} forslag</p>
-              </div>
-            </div>
-            <ChevronRight size={18} className="text-gray-300" />
-          </button>
-        )}
 
         {/* Chat-knapp (kun for betalte) */}
         {isParticipant && hasPaid && (
