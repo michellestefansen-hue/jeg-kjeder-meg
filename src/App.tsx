@@ -32,6 +32,7 @@ import Chat from './pages/chat/Chat'
 // Profil
 import Profile from './pages/profile/Profile'
 import EditProfile from './pages/profile/EditProfile'
+import UserProfile from './pages/profile/UserProfile'
 
 // Vurdering
 import Rating from './pages/rating/Rating'
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="/my-activities" element={<ProtectedRoute><MyActivities /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+            <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             <Route path="/create-activity" element={<ProtectedRoute><CreateActivity /></ProtectedRoute>} />
             <Route path="/activity/:id" element={<ProtectedRoute><ActivityDetail /></ProtectedRoute>} />
             <Route path="/voting/:id" element={<ProtectedRoute><Voting /></ProtectedRoute>} />

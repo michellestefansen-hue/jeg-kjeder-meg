@@ -78,7 +78,7 @@ export default function ActivityDetail() {
               const payment = activityPayments.find((p) => p.userId === uid)
               if (!user) return null
               return (
-                <div key={uid} className="flex items-center gap-3">
+                <button key={uid} onClick={() => navigate(`/user/${uid}`)} className="w-full flex items-center gap-3 text-left">
                   <Avatar initial={user.avatar} size="sm" index={i} />
                   <span className="flex-1 text-sm font-medium text-gray-800">
                     {user.name} {uid === activity.organizerId && <span className="text-xs text-pink-400">(arrangør)</span>}
@@ -88,7 +88,7 @@ export default function ActivityDetail() {
                   ) : (
                     <span className="text-xs bg-yellow-50 text-yellow-600 px-2 py-0.5 rounded-full">Venter</span>
                   )}
-                </div>
+                </button>
               )
             })}
           </div>

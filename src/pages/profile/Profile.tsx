@@ -59,14 +59,14 @@ export default function Profile() {
           <h3 className="font-semibold text-gray-800 mb-3">👯 Venner</h3>
           <div className="space-y-2">
             {friends.map((friend, i) => (
-              <div key={friend.id} className="flex items-center gap-3">
+              <button key={friend.id} onClick={() => navigate(`/user/${friend.id}`)} className="w-full flex items-center gap-3 text-left">
                 <Avatar initial={friend.avatar} size="sm" index={i} />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-800">{friend.name}</p>
                   <p className="text-xs text-gray-400">{friend.area}</p>
                 </div>
-                <span className="text-xs text-gray-300">→</span>
-              </div>
+                <ChevronRight size={14} className="text-gray-300" />
+              </button>
             ))}
           </div>
         </div>
