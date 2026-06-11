@@ -9,6 +9,7 @@ export interface User {
   avatar: string
   friends: string[]
   photoUrl?: string
+  vippsNumber?: string
 }
 
 export interface Activity {

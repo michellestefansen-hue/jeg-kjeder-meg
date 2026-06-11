@@ -42,6 +42,12 @@ export default function Profile() {
               <MapPin size={12} /> {currentUser.area}
             </p>
             <p className="text-pink-100 text-sm mt-0.5">{currentUser.age} år</p>
+            {currentUser.vippsNumber && (
+              <p className="text-white/60 text-xs mt-1 flex items-center gap-1">
+                <span className="font-black text-[#FF5B24] bg-white/10 px-1.5 py-0.5 rounded text-[10px]">vipps</span>
+                +47 {currentUser.vippsNumber}
+              </p>
+            )}
           </div>
         </div>
 

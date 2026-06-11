@@ -50,6 +50,7 @@ export default function EditProfile() {
 
   const [name, setName] = useState(currentUser.name)
   const [area, setArea] = useState(currentUser.area)
+  const [vippsNumber, setVippsNumber] = useState(currentUser.vippsNumber ?? '')
   const [showLocationPanel, setShowLocationPanel] = useState(false)
   const [saved, setSaved] = useState(false)
   const [photoUrl, setPhotoUrl] = useState(currentUser.photoUrl ?? '')
@@ -67,7 +68,7 @@ export default function EditProfile() {
   }
 
   const handleSave = () => {
-    updateProfile({ name: name.trim() || currentUser.name, area })
+    updateProfile({ name: name.trim() || currentUser.name, area, vippsNumber: vippsNumber.trim() })
     if (photoUrl !== currentUser.photoUrl) updateProfilePhoto(photoUrl)
     setSaved(true)
     setTimeout(() => navigate('/profile'), 800)
@@ -138,6 +139,27 @@ export default function EditProfile() {
             onChange={(e) => setName(e.target.value)}
             className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
           />
+        </div>
+
+        {/* Vipps-nummer */}
+        <div>
+          <label className="text-sm font-medium text-gray-600 mb-2 block">
+            <span className="text-[#FF5B24] font-bold">vipps</span> Mobilnummer
+          </label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🇳🇴 +47</span>
+            <input
+              type="tel"
+              placeholder="414 00 000"
+              value={vippsNumber}
+              onChange={(e) => setVippsNumber(e.target.value.replace(/\D/g, '').slice(0, 8))}
+              maxLength={8}
+              className="w-full border-2 border-gray-100 rounded-2xl pl-20 pr-4 py-3 text-base focus:outline-none focus:border-[#FF5B24] bg-gray-50 tracking-widest"
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-1.5">
+            Betalinger fra aktiviteter overføres hit
+          </p>
         </div>
 
         {/* Lokasjon */}

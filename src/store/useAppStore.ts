@@ -13,7 +13,7 @@ interface AppState {
   logout: () => void
   register: (name: string, username: string, age: number, area: string) => void
   addFriend: (userId: string) => void
-  updateProfile: (updates: Partial<{ name: string; area: string }>) => void
+  updateProfile: (updates: Partial<{ name: string; area: string; vippsNumber: string }>) => void
   updateProfilePhoto: (photoUrl: string) => void
 
   // Venneforespørsler

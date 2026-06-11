@@ -29,6 +29,9 @@ export default function ActivityDetail() {
 
   const paidCount = activityPayments.filter((p) => p.paid).length
   const totalParticipants = activity.participants.length
+  const collectedAmount = activityPayments.filter((p) => p.paid).reduce((sum, p) => sum + p.amount, 0)
+  const goalAmount = totalPrice * totalParticipants
+  const organizer = USERS.find((u) => u.id === activity.organizerId)
 
   return (
     <div className="min-h-dvh pb-32">
@@ -96,6 +99,44 @@ export default function ActivityDetail() {
             <p className="text-xs text-gray-400 mt-3 text-center">{paidCount}/{totalParticipants} har betalt</p>
           )}
         </div>
+
+        {/* Pengekasse / betalingsprogress */}
+        {goalAmount > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">💰</span>
+                <h3 className="font-semibold text-gray-900 text-sm">Pengekasse</h3>
+              </div>
+              <span className="text-sm font-bold text-gray-900">
+                {collectedAmount} / {goalAmount} kr
+              </span>
+            </div>
+            {/* Progress-bar */}
+            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-pink-400 to-purple-400 rounded-full transition-all duration-700"
+                style={{ width: `${Math.min((collectedAmount / goalAmount) * 100, 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>{paidCount} av {totalParticipants} har betalt</span>
+              <span>{Math.round((collectedAmount / goalAmount) * 100)}%</span>
+            </div>
+            {/* Vipps-mottaker */}
+            {organizer?.vippsNumber && (
+              <div className="flex items-center gap-2 bg-orange-50 rounded-xl px-3 py-2">
+                <span className="text-[#FF5B24] font-black text-xs">vipps</span>
+                <span className="text-xs text-gray-600">Betales til {organizer.name}: +47 {organizer.vippsNumber}</span>
+              </div>
+            )}
+            {isParticipant && hasPaid && collectedAmount >= goalAmount && (
+              <div className="text-center text-sm font-semibold text-green-600">
+                ✅ Alle har betalt! Aktiviteten er klar.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Reiserute-knapp */}
         {(activity.distance ?? 0) > 1 && (
