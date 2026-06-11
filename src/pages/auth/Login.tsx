@@ -1,10 +1,15 @@
 // ─── Innloggingsside med Supabase ─────────────────────────────────────────────
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import Header from '../../components/layout/Header'
-import { loginUser, sendPasswordReset } from '../../lib/auth'
+import { loginUser, getProfile, sendPasswordReset } from '../../lib/auth'
+import { useAppStore } from '../../store/useAppStore'
 
 export default function Login() {
+  const navigate = useNavigate()
+  const login = useAppStore((s) => s.login)
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -16,8 +21,22 @@ export default function Login() {
     setLoading(true)
     setError('')
     try {
-      await loginUser(email, password)
-      // App.tsx lytter på auth-endringer og navigerer automatisk
+      const user = await loginUser(email, password)
+      if (user) {
+        const profile = await getProfile(user.id)
+        login({
+          id: user.id,
+          name: profile.name,
+          username: profile.username,
+          age: profile.age,
+          area: profile.area,
+          avatar: profile.name[0].toUpperCase(),
+          friends: profile.friends ?? [],
+          photoUrl: profile.photo_url,
+          vippsNumber: profile.vipps_number,
+        })
+        navigate('/home')
+      }
     } catch (e: unknown) {
       setError('Feil e-post eller passord. Prøv igjen.')
     } finally {
@@ -57,21 +76,27 @@ export default function Login() {
           </div>
         )}
 
-        <input
-          type="email"
-          placeholder="E-post"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
-        />
-        <input
-          type="password"
-          placeholder="Passord"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-          className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
-        />
+        <div>
+          <label className="text-sm font-medium text-gray-600 mb-2 block">E-postadresse</label>
+          <input
+            type="email"
+            placeholder="din@epost.no"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-600 mb-2 block">Passord</label>
+          <input
+            type="password"
+            placeholder="Passordet ditt"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+            className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
+          />
+        </div>
         <Button
           variant="primary"
           fullWidth
