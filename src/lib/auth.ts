@@ -59,7 +59,8 @@ export async function sendPasswordReset(email: string) {
 }
 
 // Hent profil med retry (i tilfelle race condition etter registrering)
-export async function getProfile(userId: string, retries = 3): Promise<Record<string, unknown>> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getProfile(userId: string, retries = 3): Promise<any> {
   for (let i = 0; i < retries; i++) {
     const { data, error } = await supabase
       .from('profiles')
@@ -78,7 +79,8 @@ export async function getProfile(userId: string, retries = 3): Promise<Record<st
   throw new Error('Kunne ikke hente profil')
 }
 
-export async function updateProfile(userId: string, updates: Record<string, unknown>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function updateProfile(userId: string, updates: Record<string, any>) {
   const { error } = await supabase
     .from('profiles')
     .update(updates)
