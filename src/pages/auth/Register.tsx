@@ -1,15 +1,12 @@
 // ─── Registreringsside ────────────────────────────────────────────────────────
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { MapPin, X } from 'lucide-react'
 import Button from '../../components/ui/Button'
 import Header from '../../components/layout/Header'
-import { useAppStore } from '../../store/useAppStore'
 import { POSTNUMMER } from '../../data/postnummer'
+import { registerUser } from '../../lib/auth'
 
 export default function Register() {
-  const navigate = useNavigate()
-  const register = useAppStore((s) => s.register)
 
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
@@ -19,15 +16,25 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showAreaPanel, setShowAreaPanel] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const ageNum = parseInt(age)
   const ageValid = ageNum >= 10 && ageNum <= 17
   const usernameValid = /^[a-z0-9_.]{3,20}$/.test(username)
 
-  const handleFinish = () => {
-    if (!ageValid) return
-    register(name, username, ageNum, area || 'Oslo')
-    navigate('/home')
+  const handleFinish = async () => {
+    if (!ageValid || !email || password.length < 8) return
+    setLoading(true)
+    setError('')
+    try {
+      await registerUser(email, password, name, username, ageNum, area || 'Oslo')
+      // App.tsx lytter på auth og navigerer automatisk
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Noe gikk galt'
+      setError(msg.includes('already') ? 'E-posten er allerede i bruk' : msg)
+      setLoading(false)
+    }
   }
 
   return (
@@ -179,6 +186,11 @@ export default function Register() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
             />
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-sm text-red-600 text-center">
+                {error}
+              </div>
+            )}
             <p className="text-xs text-gray-400 text-center">
               Ved å opprette konto godtar du våre vilkår. Lokka er kun for brukere mellom 10–17 år.
             </p>
@@ -186,10 +198,10 @@ export default function Register() {
               variant="primary"
               fullWidth
               size="lg"
-              disabled={!email || password.length < 8}
+              disabled={loading || !email || password.length < 8}
               onClick={handleFinish}
             >
-              Opprett konto 🎉
+              {loading ? 'Oppretter konto...' : 'Opprett konto 🎉'}
             </Button>
           </>
         )}

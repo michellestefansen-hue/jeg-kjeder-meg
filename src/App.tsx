@@ -1,6 +1,9 @@
 // ─── App-ruting ───────────────────────────────────────────────────────────────
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { useAppStore } from './store/useAppStore'
+import { supabase } from './lib/supabase'
+import { getProfile } from './lib/auth'
 
 // Auth
 import Welcome from './pages/auth/Welcome'
@@ -52,6 +55,66 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const bgColor = useAppStore((s) => s.bgColor)
+  const { login, logout } = useAppStore()
+  const [authReady, setAuthReady] = useState(false)
+
+  useEffect(() => {
+    // Sjekk eksisterende session ved oppstart
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        try {
+          const profile = await getProfile(session.user.id)
+          login({
+            id: session.user.id,
+            name: profile.name,
+            username: profile.username,
+            age: profile.age,
+            area: profile.area,
+            avatar: profile.name[0].toUpperCase(),
+            friends: profile.friends ?? [],
+            photoUrl: profile.photo_url,
+            vippsNumber: profile.vipps_number,
+          })
+        } catch { logout() }
+      }
+      setAuthReady(true)
+    })
+
+    // Lytt på auth-endringer (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        try {
+          const profile = await getProfile(session.user.id)
+          login({
+            id: session.user.id,
+            name: profile.name,
+            username: profile.username,
+            age: profile.age,
+            area: profile.area,
+            avatar: profile.name[0].toUpperCase(),
+            friends: profile.friends ?? [],
+            photoUrl: profile.photo_url,
+            vippsNumber: profile.vipps_number,
+          })
+        } catch { /* profil ikke klar ennå */ }
+      }
+      if (event === 'SIGNED_OUT') logout()
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  if (!authReady) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+        <div className="text-center space-y-3">
+          <div className="text-5xl">📍</div>
+          <div className="w-8 h-8 border-4 border-pink-400 border-t-transparent rounded-full animate-spin mx-auto" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     // Mobil-wrapper: maks 430px, sentrert
     <div className="min-h-dvh bg-gray-100 flex justify-center">
