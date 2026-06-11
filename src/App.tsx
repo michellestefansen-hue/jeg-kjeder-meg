@@ -35,6 +35,8 @@ import EditProfile from './pages/profile/EditProfile'
 import UserProfile from './pages/profile/UserProfile'
 import Privacy from './pages/profile/Privacy'
 import AddFriends from './pages/profile/AddFriends'
+import Messages from './pages/chat/Messages'
+import DirectChat from './pages/chat/DirectChat'
 
 // Vurdering
 import Rating from './pages/rating/Rating'
@@ -66,6 +68,8 @@ export default function App() {
             <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
             <Route path="/add-friends" element={<ProtectedRoute><AddFriends /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/direct/:userId" element={<ProtectedRoute><DirectChat /></ProtectedRoute>} />
             <Route path="/create-activity" element={<ProtectedRoute><CreateActivity /></ProtectedRoute>} />
             <Route path="/activity/:id" element={<ProtectedRoute><ActivityDetail /></ProtectedRoute>} />
             <Route path="/voting/:id" element={<ProtectedRoute><Voting /></ProtectedRoute>} />

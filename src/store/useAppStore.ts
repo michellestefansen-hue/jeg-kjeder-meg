@@ -43,6 +43,11 @@ interface AppState {
   blockUser: (userId: string) => void
   unblockUser: (userId: string) => void
 
+  // Direktemeldinger
+  directChats: Record<string, { messages: { id: string; from: string; text: string; time: string }[]; unread: number }>
+  sendDirect: (toUserId: string, text: string) => void
+  markRead: (userId: string) => void
+
   // Tema
   bgColor: string
   setBgColor: (color: string) => void
@@ -80,6 +85,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   addFriend: (userId) => {
     const { currentUser } = get()
     if (!currentUser || currentUser.friends.includes(userId)) return
+    if (currentUser.friends.length >= 150) return // maks 150 venner
     set({ currentUser: { ...currentUser, friends: [...currentUser.friends, userId] } })
   },
 
@@ -204,6 +210,29 @@ export const useAppStore = create<AppState>((set, get) => ({
   blockedUsers: [],
   blockUser: (userId) => set((s) => ({ blockedUsers: [...s.blockedUsers, userId] })),
   unblockUser: (userId) => set((s) => ({ blockedUsers: s.blockedUsers.filter((id) => id !== userId) })),
+
+  // ─── Direktemeldinger ─────────────────────────────────────────────────────
+  directChats: {},
+  sendDirect: (toUserId, text) => {
+    const { currentUser, directChats } = get()
+    if (!currentUser) return
+    const now = new Date()
+    const time = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
+    const msg = { id: `dm_${Date.now()}`, from: currentUser.id, text, time }
+    const existing = directChats[toUserId] || { messages: [], unread: 0 }
+    set({
+      directChats: {
+        ...directChats,
+        [toUserId]: { messages: [...existing.messages, msg], unread: existing.unread },
+      },
+    })
+  },
+  markRead: (userId) => {
+    const { directChats } = get()
+    const existing = directChats[userId]
+    if (!existing) return
+    set({ directChats: { ...directChats, [userId]: { ...existing, unread: 0 } } })
+  },
 
   // ─── Tema ─────────────────────────────────────────────────────────────────
   bgColor: '#ffffff',

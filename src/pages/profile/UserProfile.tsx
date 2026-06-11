@@ -1,7 +1,7 @@
 // ─── Se andres profil ─────────────────────────────────────────────────────────
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, UserPlus, UserCheck, ShieldOff, Shield } from 'lucide-react'
+import { MapPin, UserPlus, UserCheck, ShieldOff, Shield, MessageCircle } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { USERS } from '../../data/mockData'
 import Avatar from '../../components/ui/Avatar'
@@ -77,6 +77,16 @@ export default function UserProfile() {
                 ) : (
                   <><UserPlus size={16} /> Legg til venn</>
                 )}
+              </button>
+            )}
+
+            {/* Send melding */}
+            {!isBlocked && (
+              <button
+                onClick={() => navigate(`/direct/${user.id}`)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold bg-purple-50 text-purple-600 border border-purple-200"
+              >
+                <MessageCircle size={15} /> Send melding
               </button>
             )}
 

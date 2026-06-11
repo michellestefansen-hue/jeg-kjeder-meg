@@ -26,7 +26,10 @@ export default function AddFriends() {
       )
     : []
 
+  const atLimit = currentUser.friends.length >= 150
+
   const handleAdd = (userId: string) => {
+    if (atLimit) return
     addFriend(userId)
     setJustAdded((prev) => [...prev, userId])
   }
@@ -39,6 +42,11 @@ export default function AddFriends() {
       <Header title="Legg til venner" />
 
       <div className="px-4 py-5 space-y-5">
+        {atLimit && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3 text-sm text-yellow-700 text-center">
+            Du har nådd grensen på 150 venner
+          </div>
+        )}
         {/* Søkefelt */}
         <div className="relative">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
