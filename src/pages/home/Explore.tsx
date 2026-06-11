@@ -68,11 +68,16 @@ export default function Explore() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [citySearch, setCitySearch] = useState('')
 
+  // Hent bynavn uten land (f.eks. "Oslo" fra "Oslo, Norge")
+  const selectedCity = location.split(',')[0].trim().toLowerCase()
+
   const openActivities = activities.filter(
     (a) =>
       a.type === 'open' &&
       a.ageRange[0] <= currentUser.age &&
       currentUser.age <= a.ageRange[1] &&
+      (a.location.toLowerCase().includes(selectedCity) ||
+        a.address.toLowerCase().includes(selectedCity)) &&
       (query === '' ||
         a.title.toLowerCase().includes(query.toLowerCase()) ||
         a.location.toLowerCase().includes(query.toLowerCase()))
