@@ -9,7 +9,7 @@ import { USERS } from '../../data/mockData'
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { currentUser, activities, logout, bgColor, setBgColor } = useAppStore()
+  const { currentUser, activities, logout, bgColor, setBgColor, bannerColor, setBannerColor } = useAppStore()
   if (!currentUser) { navigate('/'); return null }
 
   const myActivities = activities.filter((a) => a.participants.includes(currentUser.id))
@@ -19,7 +19,7 @@ export default function Profile() {
   return (
     <div className="min-h-dvh pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-br from-pink-400 to-purple-500 px-4 pt-12 pb-8 text-white">
+      <div className="px-4 pt-12 pb-8 text-white" style={{ backgroundColor: bannerColor }}>
         <div className="flex items-center gap-4">
           <div className="w-18 h-18 bg-white/20 rounded-full flex items-center justify-center">
             <span className="text-4xl font-black text-white">{currentUser.avatar}</span>
@@ -59,26 +59,12 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Bakgrunnsfarge */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-gray-800 mb-3">🎨 Bakgrunnsfarge</h3>
-          <label className="flex items-center gap-4 cursor-pointer">
-            <div
-              className="w-14 h-14 rounded-2xl border-2 border-gray-200 shadow-sm flex-shrink-0 overflow-hidden relative"
-              style={{ backgroundColor: bgColor }}
-            >
-              <input
-                type="color"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-800">Velg farge</p>
-              <p className="text-xs text-gray-400 mt-0.5">{bgColor}</p>
-            </div>
-          </label>
+        {/* Farger */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
+          <h3 className="font-semibold text-gray-800">🎨 Farger</h3>
+
+          <ColorPicker label="Bakgrunnsfarge" value={bgColor} onChange={setBgColor} />
+          <ColorPicker label="Bannerfarge" value={bannerColor} onChange={setBannerColor} />
         </div>
 
         {/* Innstillinger */}
@@ -115,6 +101,28 @@ export default function Profile() {
 
       <BottomNav />
     </div>
+  )
+}
+
+function ColorPicker({ label, value, onChange }: { label: string; value: string; onChange: (c: string) => void }) {
+  return (
+    <label className="flex items-center gap-4 cursor-pointer">
+      <div
+        className="w-12 h-12 rounded-2xl border-2 border-gray-200 shadow-sm flex-shrink-0 overflow-hidden relative"
+        style={{ backgroundColor: value }}
+      >
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-800">{label}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{value}</p>
+      </div>
+    </label>
   )
 }
 

@@ -40,6 +40,8 @@ interface AppState {
   // Tema
   bgColor: string
   setBgColor: (color: string) => void
+  bannerColor: string
+  setBannerColor: (color: string) => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -188,4 +190,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   // ─── Tema ─────────────────────────────────────────────────────────────────
   bgColor: '#ffffff',
   setBgColor: (color) => set({ bgColor: color }),
+
+  bannerColor: '#ec4899',
+  setBannerColor: (color) => set({ bannerColor: color }),
 }))
