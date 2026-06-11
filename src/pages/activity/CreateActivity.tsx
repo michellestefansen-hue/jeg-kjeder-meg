@@ -1,6 +1,6 @@
 // ─── Opprett aktivitet ────────────────────────────────────────────────────────
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Lock, Globe, Users, MapPin, ChevronDown, ChevronLeft, Search, X } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { USERS } from '../../data/mockData'
@@ -58,6 +58,7 @@ const ACTIVITY_SUGGESTIONS = [
 
 export default function CreateActivity() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { currentUser, createActivity } = useAppStore()
   if (!currentUser) return null
 
@@ -65,9 +66,9 @@ export default function CreateActivity() {
 
   const [step, setStep] = useState(1)
   const [type, setType] = useState<'open' | 'closed'>('open')
-  const [title, setTitle] = useState('')
-  const [emoji, setEmoji] = useState('🎉')
-  const [location, setLocation] = useState('')
+  const [title, setTitle] = useState(searchParams.get('title') ?? '')
+  const [emoji, setEmoji] = useState(searchParams.get('emoji') ?? '🎉')
+  const [location, setLocation] = useState(searchParams.get('location') ?? '')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [maxParticipants, setMaxParticipants] = useState(6)

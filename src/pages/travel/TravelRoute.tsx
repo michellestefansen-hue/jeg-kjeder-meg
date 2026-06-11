@@ -17,18 +17,47 @@ export default function TravelRoute() {
 
   if (!activity || !currentUser) return null
 
+  const fromCity = currentUser.area.split(',')[0].trim()
+  const toCity = (activity.location || activity.address || 'Destinasjonen').split(',')[0].trim()
+  const isSameCity = fromCity.toLowerCase() === toCity.toLowerCase()
+
   const routeData = routes || {
     from: currentUser.area,
-    to: activity.location,
+    to: activity.location || activity.address || activity.title,
     options: [
       {
         type: 'Kollektivt',
         icon: '🚌',
-        duration: '20 min',
-        departure: '14:40',
-        arrival: '15:00',
-        price: 40,
-        steps: ['Gå til nærmeste holdeplass', 'Ta bussen mot sentrum', 'Gå til destinasjonen'],
+        duration: isSameCity ? '20 min' : '1 t 45 min',
+        departure: '13:00',
+        arrival: isSameCity ? '13:20' : '14:45',
+        price: isSameCity ? 40 : 249,
+        steps: isSameCity
+          ? [
+              `Gå til nærmeste holdeplass i ${fromCity}`,
+              `Ta bussen mot ${toCity}`,
+              `Gå til ${activity.title}`,
+            ]
+          : [
+              `Gå til togstasjonen i ${fromCity}`,
+              `Ta toget til ${toCity} (ca. 1 t 30 min)`,
+              `Ta buss eller drosje til ${activity.title}`,
+            ],
+      },
+      {
+        type: 'Bil',
+        icon: '🚗',
+        duration: isSameCity ? '15 min' : '1 t 20 min',
+        departure: '13:00',
+        arrival: isSameCity ? '13:15' : '14:20',
+        price: 0,
+        steps: isSameCity
+          ? [`Kjør mot ${toCity} sentrum`, `Følg veien til ${activity.title}`]
+          : [
+              `Kjør ut av ${fromCity}`,
+              `Ta E6 / riksveien mot ${toCity}`,
+              `Følg skilting til ${activity.title}`,
+            ],
       },
     ],
   }
