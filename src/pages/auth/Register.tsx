@@ -57,15 +57,21 @@ export default function Register() {
               <h2 className="text-2xl font-bold text-gray-900">Hva heter du? 👋</h2>
               <p className="text-gray-500 mt-1">Dette er hva vennene dine ser</p>
             </div>
-            <input
-              type="text"
-              placeholder="Fornavnet ditt"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-lg focus:outline-none focus:border-pink-400 bg-gray-50"
-            />
             <div>
-              <label className="text-sm font-medium text-gray-600 mb-2 block">Brukernavn</label>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Fornavn</label>
+              <input
+                type="text"
+                placeholder="F.eks. Sofia"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-lg focus:outline-none focus:border-pink-400 bg-gray-50"
+              />
+              <p className="text-xs text-gray-400 mt-1.5">Dette er navnet vennene dine ser</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Brukernavn
+                <span className="text-gray-400 font-normal ml-1">— brukes for å finne deg</span>
+              </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-medium">@</span>
                 <input
@@ -85,10 +91,12 @@ export default function Register() {
               )}
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600 mb-2 block">Alder</label>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Alder
+                <span className="text-gray-400 font-normal ml-1">— kun 10–17 år</span>
+              </label>
               <input
                 type="number"
-                placeholder="Hvor gammel er du?"
+                placeholder="F.eks. 14"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
                 min={10}
@@ -109,8 +117,10 @@ export default function Register() {
           <>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Hvor bor du? 📍</h2>
-              <p className="text-gray-500 mt-1">Skriv postnummer eller poststed</p>
+              <p className="text-gray-500 mt-1">Vi bruker dette for å finne aktiviteter i nærheten</p>
             </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Postnummer eller poststed</label>
             <div className="relative">
               <MapPin size={16} className="absolute left-4 top-4 text-pink-400 pointer-events-none" />
               <input
@@ -162,6 +172,7 @@ export default function Register() {
                 </div>
               )
             })()}
+            </div>
             <Button variant="primary" fullWidth size="lg" disabled={!area} onClick={() => setStep(3)}>
               Neste
             </Button>
@@ -174,20 +185,36 @@ export default function Register() {
               <h2 className="text-2xl font-bold text-gray-900">Logg inn-info 🔐</h2>
               <p className="text-gray-500 mt-1">Opprett en trygg konto</p>
             </div>
-            <input
-              type="email"
-              placeholder="E-post"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
-            />
-            <input
-              type="password"
-              placeholder="Passord (minst 8 tegn)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
-            />
+            <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">E-postadresse
+                <span className="text-gray-400 font-normal ml-1">— brukes til innlogging</span>
+              </label>
+              <input
+                type="email"
+                placeholder="din@epost.no"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Passord
+                <span className="text-gray-400 font-normal ml-1">— minst 8 tegn</span>
+              </label>
+              <input
+                type="password"
+                placeholder="Velg et sterkt passord"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:border-pink-400 bg-gray-50"
+              />
+              {password.length > 0 && password.length < 8 && (
+                <p className="text-red-400 text-xs mt-1.5">Passordet må være minst 8 tegn</p>
+              )}
+              {password.length >= 8 && (
+                <p className="text-green-500 text-xs mt-1.5">✓ Passordet er sterkt nok</p>
+              )}
+            </div>
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-sm text-red-600 text-center">
                 {error}
