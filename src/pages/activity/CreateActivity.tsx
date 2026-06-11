@@ -293,7 +293,7 @@ export default function CreateActivity() {
               <p className="text-gray-500 text-sm mt-1">
                 {type === 'closed'
                   ? 'Velg hvem du vil ha med'
-                  : 'Aktiviteten din blir synlig for jenter i nærheten på samme alder'}
+                  : 'Aktiviteten din blir synlig for andre i nærheten på samme alder'}
               </p>
             </div>
 
