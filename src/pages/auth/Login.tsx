@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAppStore } from '../../store/useAppStore'
@@ -6,19 +6,32 @@ import { getProfile } from '../../lib/auth'
 
 export default function Login() {
   const navigate = useNavigate()
-  const login = useAppStore((s) => s.login)
+  const { login, isLoggedIn } = useAppStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Naviger til hjem ETTER at isLoggedIn er satt i React-treet
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/home', { replace: true })
+    }
+  }, [isLoggedIn])
+
   const handleLogin = async () => {
     if (!email || !password) { setMsg('Fyll inn e-post og passord'); return }
-    setMsg(''); setLoading(true)
+    setMsg('')
+    setLoading(true)
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) { setMsg(error.message); setLoading(false); return }
+
+      if (error) {
+        setMsg(error.message)
+        setLoading(false)
+        return
+      }
 
       const user = data.user
       if (!user) { setMsg('Ingen bruker funnet'); setLoading(false); return }
@@ -27,7 +40,7 @@ export default function Login() {
       let profile = null
       try { profile = await getProfile(user.id) } catch { /* profil mangler */ }
 
-      // Sett bruker i store
+      // Sett bruker i store — useEffect over vil navigere etter re-render
       login({
         id: user.id,
         name: profile?.name ?? email.split('@')[0],
@@ -39,9 +52,6 @@ export default function Login() {
         photoUrl: profile?.photo_url,
         vippsNumber: profile?.vipps_number,
       })
-
-      // Naviger uten page reload
-      navigate('/home', { replace: true })
     } catch (e: unknown) {
       setMsg(e instanceof Error ? e.message : 'Noe gikk galt')
       setLoading(false)
