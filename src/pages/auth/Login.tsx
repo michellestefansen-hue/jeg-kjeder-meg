@@ -17,11 +17,16 @@ export default function Login() {
   const [resetSent, setResetSent] = useState(false)
 
   const handleLogin = async () => {
-    if (!email || !password) return
+    // Les verdier fra DOM direkte for å håndtere autofyll
+    const emailVal = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value || email
+    const passwordVal = (document.querySelector('input[type="password"]') as HTMLInputElement)?.value || password
+    if (emailVal) setEmail(emailVal)
+    if (passwordVal) setPassword(passwordVal)
+    if (!emailVal || !passwordVal) { setError('Fyll inn e-post og passord'); return }
     setLoading(true)
     setError('')
     try {
-      const user = await loginUser(email, password)
+      const user = await loginUser(emailVal, passwordVal)
       if (user) {
         const profile = await getProfile(user.id)
         login({
@@ -102,7 +107,7 @@ export default function Login() {
           variant="primary"
           fullWidth
           size="lg"
-          disabled={loading || !email || !password}
+          disabled={loading}
           onClick={handleLogin}
         >
           {loading ? 'Logger inn...' : 'Logg inn'}
