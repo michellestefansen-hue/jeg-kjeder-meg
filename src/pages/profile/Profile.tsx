@@ -71,7 +71,7 @@ export default function Profile() {
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           {[
             { label: 'Rediger profil', emoji: '✏️', path: '/edit-profile' },
-            { label: 'Personvern', emoji: '🔒', path: null },
+            { label: 'Personvern', emoji: '🔒', path: '/privacy' },
             { label: 'Hjelp', emoji: '❓', path: null },
           ].map(({ label, emoji, path }) => (
             <button
