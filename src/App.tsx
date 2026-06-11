@@ -60,25 +60,30 @@ export default function App() {
 
   useEffect(() => {
     // Sjekk eksisterende session ved oppstart
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        try {
-          const profile = await getProfile(session.user.id)
-          login({
-            id: session.user.id,
-            name: profile.name,
-            username: profile.username,
-            age: profile.age,
-            area: profile.area,
-            avatar: profile.name[0].toUpperCase(),
-            friends: profile.friends ?? [],
-            photoUrl: profile.photo_url,
-            vippsNumber: profile.vipps_number,
-          })
-        } catch { logout() }
-      }
-      setAuthReady(true)
-    })
+    supabase.auth.getSession()
+      .then(async ({ data: { session } }) => {
+        if (session?.user) {
+          try {
+            const profile = await getProfile(session.user.id)
+            login({
+              id: session.user.id,
+              name: profile.name,
+              username: profile.username,
+              age: profile.age,
+              area: profile.area,
+              avatar: profile.name[0].toUpperCase(),
+              friends: profile.friends ?? [],
+              photoUrl: profile.photo_url,
+              vippsNumber: profile.vipps_number,
+            })
+          } catch { logout() }
+        }
+        setAuthReady(true)
+      })
+      .catch((err) => {
+        console.error('Auth-feil:', err)
+        setAuthReady(true) // Vis appen uansett
+      })
 
     // Lytt på auth-endringer (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
