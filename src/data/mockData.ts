@@ -3,6 +3,7 @@
 export interface User {
   id: string
   name: string
+  username: string
   age: number
   area: string
   avatar: string
@@ -59,6 +60,7 @@ export const USERS: User[] = [
   {
     id: 'u1',
     name: 'Sofia',
+    username: 'sofia14',
     age: 14,
     area: 'Grünerløkka, Oslo',
     avatar: 'S',
@@ -67,6 +69,7 @@ export const USERS: User[] = [
   {
     id: 'u2',
     name: 'Emma',
+    username: 'emma_oslo',
     age: 14,
     area: 'Majorstuen, Oslo',
     avatar: 'E',
@@ -75,6 +78,7 @@ export const USERS: User[] = [
   {
     id: 'u3',
     name: 'Maja',
+    username: 'maja.frogner',
     age: 14,
     area: 'Frogner, Oslo',
     avatar: 'M',
@@ -83,6 +87,7 @@ export const USERS: User[] = [
   {
     id: 'u4',
     name: 'Ida',
+    username: 'idaaa14',
     age: 14,
     area: 'St. Hanshaugen, Oslo',
     avatar: 'I',
@@ -91,6 +96,7 @@ export const USERS: User[] = [
   {
     id: 'u5',
     name: 'Thea',
+    username: 'thea.bislett',
     age: 14,
     area: 'Bislett, Oslo',
     avatar: 'T',

@@ -44,6 +44,7 @@ export default function UserProfile() {
           <Avatar initial={user.avatar} size="lg" index={userIndex} />
           <div>
             <h1 className="text-2xl font-black">{user.name}</h1>
+            <p className="text-white/70 text-sm font-medium mt-0.5">@{user.username}</p>
             <p className="text-pink-100 text-sm flex items-center gap-1 mt-0.5">
               <MapPin size={12} /> {user.area}
             </p>

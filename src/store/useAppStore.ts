@@ -11,7 +11,8 @@ interface AppState {
   isLoggedIn: boolean
   login: (user: User) => void
   logout: () => void
-  register: (name: string, age: number, area: string) => void
+  register: (name: string, username: string, age: number, area: string) => void
+  addFriend: (userId: string) => void
   updateProfile: (updates: Partial<{ name: string; area: string }>) => void
 
   // Aktiviteter
@@ -63,16 +64,23 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ currentUser: { ...currentUser, ...updates } })
   },
 
-  register: (name, age, area) => {
+  register: (name, username, age, area) => {
     const newUser: User = {
       id: `u_${Date.now()}`,
       name,
+      username: username || name.toLowerCase().replace(/\s/g, ''),
       age,
       area,
       avatar: name[0].toUpperCase(),
-      friends: ['u2', 'u3', 'u4', 'u5'], // starter med venner i mock
+      friends: ['u2', 'u3', 'u4', 'u5'],
     }
     set({ currentUser: newUser, isLoggedIn: true })
+  },
+
+  addFriend: (userId) => {
+    const { currentUser } = get()
+    if (!currentUser || currentUser.friends.includes(userId)) return
+    set({ currentUser: { ...currentUser, friends: [...currentUser.friends, userId] } })
   },
 
   // ─── Aktiviteter ─────────────────────────────────────────────────────────

@@ -26,6 +26,7 @@ export default function Profile() {
           </div>
           <div>
             <h1 className="text-2xl font-black">{currentUser.name}</h1>
+            <p className="text-white/70 text-sm font-medium mt-0.5">@{currentUser.username}</p>
             <p className="text-pink-100 text-sm flex items-center gap-1 mt-0.5">
               <MapPin size={12} /> {currentUser.area}
             </p>
@@ -44,7 +45,15 @@ export default function Profile() {
       <div className="px-4 py-4 space-y-4">
         {/* Venner */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-gray-800 mb-3">👯 Venner</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-800">👯 Venner</h3>
+            <button
+              onClick={() => navigate('/add-friends')}
+              className="flex items-center gap-1 text-xs font-semibold text-pink-500 bg-pink-50 px-3 py-1.5 rounded-full"
+            >
+              + Legg til
+            </button>
+          </div>
           <div className="space-y-2">
             {friends.map((friend, i) => (
               <button key={friend.id} onClick={() => navigate(`/user/${friend.id}`)} className="w-full flex items-center gap-3 text-left">

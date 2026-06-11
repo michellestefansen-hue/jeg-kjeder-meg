@@ -13,6 +13,7 @@ export default function Register() {
 
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
   const [age, setAge] = useState('')
   const [area, setArea] = useState('')
   const [email, setEmail] = useState('')
@@ -21,10 +22,11 @@ export default function Register() {
 
   const ageNum = parseInt(age)
   const ageValid = ageNum >= 10 && ageNum <= 17
+  const usernameValid = /^[a-z0-9_.]{3,20}$/.test(username)
 
   const handleFinish = () => {
     if (!ageValid) return
-    register(name, ageNum, area || 'Oslo')
+    register(name, username, ageNum, area || 'Oslo')
     navigate('/home')
   }
 
@@ -54,6 +56,26 @@ export default function Register() {
               className="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-lg focus:outline-none focus:border-pink-400 bg-gray-50"
             />
             <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Brukernavn</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-medium">@</span>
+                <input
+                  type="text"
+                  placeholder="ditt.brukernavn"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ''))}
+                  maxLength={20}
+                  className="w-full border-2 border-gray-100 rounded-2xl pl-8 pr-4 py-4 text-lg focus:outline-none focus:border-pink-400 bg-gray-50"
+                />
+              </div>
+              {username.length > 0 && !usernameValid && (
+                <p className="text-red-400 text-xs mt-1">3–20 tegn, kun bokstaver, tall, punktum og understrek</p>
+              )}
+              {usernameValid && (
+                <p className="text-green-500 text-xs mt-1">✓ @{username} er tilgjengelig</p>
+              )}
+            </div>
+            <div>
               <label className="text-sm font-medium text-gray-600 mb-2 block">Alder</label>
               <input
                 type="number"
@@ -68,7 +90,7 @@ export default function Register() {
                 <p className="text-red-400 text-sm mt-2">Lokka er for brukere mellom 10–17 år 🙏</p>
               )}
             </div>
-            <Button variant="primary" fullWidth size="lg" disabled={!name || !ageValid} onClick={() => setStep(2)}>
+            <Button variant="primary" fullWidth size="lg" disabled={!name || !usernameValid || !ageValid} onClick={() => setStep(2)}>
               Neste
             </Button>
           </>
