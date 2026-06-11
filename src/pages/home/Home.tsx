@@ -1,5 +1,5 @@
 // ─── Startside ────────────────────────────────────────────────────────────────
-import { Plus, Bell, MapPin, UserPlus } from 'lucide-react'
+import { Plus, Bell, MapPin } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
 import { USERS, INVITATIONS } from '../../data/mockData'
@@ -10,7 +10,7 @@ import { nb } from 'date-fns/locale'
 
 export default function Home() {
   const navigate = useNavigate()
-  const { currentUser, activities, setActiveActivity, friendRequests } = useAppStore()
+  const { currentUser, activities, setActiveActivity } = useAppStore()
 
   if (!currentUser) { navigate('/'); return null }
 
@@ -69,29 +69,6 @@ export default function Home() {
       </div>
 
       <div className="px-4 py-5 space-y-6">
-
-        {/* Venneforespørsler */}
-        {friendRequests.length > 0 && (
-          <button
-            onClick={() => navigate('/friend-requests')}
-            className="w-full flex items-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-2xl p-4 text-left"
-          >
-            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <UserPlus size={18} className="text-purple-500" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-gray-900">
-                {friendRequests.length === 1
-                  ? '1 venneforespørsel'
-                  : `${friendRequests.length} venneforespørsler`}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">Trykk for å godta eller avslå</p>
-            </div>
-            <span className="w-6 h-6 bg-pink-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-              {friendRequests.length}
-            </span>
-          </button>
-        )}
 
         {/* Invitasjoner */}
         {INVITATIONS.length > 0 && (
