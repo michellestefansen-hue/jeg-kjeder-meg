@@ -14,7 +14,10 @@ const tabs = [
 export default function BottomNav() {
   const navigate = useNavigate()
   const location = useLocation()
-  const unread = useAppStore((s) => Object.values(s.directChats).filter((c) => c.unread > 0).length)
+  const unread = useAppStore((s) =>
+    Object.values(s.directChats).filter((c) => c.unread > 0).length +
+    Object.values(s.groupChats).filter((g) => g.unread > 0).length
+  )
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex safe-bottom z-50 max-w-md mx-auto">

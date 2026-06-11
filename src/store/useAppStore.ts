@@ -48,6 +48,12 @@ interface AppState {
   sendDirect: (toUserId: string, text: string) => void
   markRead: (userId: string) => void
 
+  // Gruppechat
+  groupChats: Record<string, { name: string; emoji: string; members: string[]; messages: { id: string; from: string; text: string; time: string }[]; unread: number }>
+  createGroup: (name: string, emoji: string, memberIds: string[]) => string
+  sendGroupMessage: (groupId: string, text: string) => void
+  markGroupRead: (groupId: string) => void
+
   // Tema
   bgColor: string
   setBgColor: (color: string) => void
@@ -210,6 +216,43 @@ export const useAppStore = create<AppState>((set, get) => ({
   blockedUsers: [],
   blockUser: (userId) => set((s) => ({ blockedUsers: [...s.blockedUsers, userId] })),
   unblockUser: (userId) => set((s) => ({ blockedUsers: s.blockedUsers.filter((id) => id !== userId) })),
+
+  // ─── Gruppechat ───────────────────────────────────────────────────────────
+  groupChats: {},
+  createGroup: (name, emoji, memberIds) => {
+    const { currentUser } = get()
+    if (!currentUser) return ''
+    const id = `g_${Date.now()}`
+    set((s) => ({
+      groupChats: {
+        ...s.groupChats,
+        [id]: { name, emoji, members: [currentUser.id, ...memberIds], messages: [], unread: 0 },
+      },
+    }))
+    return id
+  },
+  sendGroupMessage: (groupId, text) => {
+    const { currentUser, groupChats } = get()
+    if (!currentUser) return
+    const now = new Date()
+    const time = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
+    const msg = { id: `gm_${Date.now()}`, from: currentUser.id, text, time }
+    const existing = groupChats[groupId]
+    if (!existing) return
+    set((s) => ({
+      groupChats: {
+        ...s.groupChats,
+        [groupId]: { ...existing, messages: [...existing.messages, msg] },
+      },
+    }))
+  },
+  markGroupRead: (groupId) => {
+    set((s) => {
+      const g = s.groupChats[groupId]
+      if (!g) return s
+      return { groupChats: { ...s.groupChats, [groupId]: { ...g, unread: 0 } } }
+    })
+  },
 
   // ─── Direktemeldinger ─────────────────────────────────────────────────────
   directChats: {},

@@ -37,6 +37,8 @@ import Privacy from './pages/profile/Privacy'
 import AddFriends from './pages/profile/AddFriends'
 import Messages from './pages/chat/Messages'
 import DirectChat from './pages/chat/DirectChat'
+import CreateGroup from './pages/chat/CreateGroup'
+import GroupChat from './pages/chat/GroupChat'
 
 // Vurdering
 import Rating from './pages/rating/Rating'
@@ -70,6 +72,8 @@ export default function App() {
             <Route path="/add-friends" element={<ProtectedRoute><AddFriends /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/direct/:userId" element={<ProtectedRoute><DirectChat /></ProtectedRoute>} />
+            <Route path="/create-group" element={<ProtectedRoute><CreateGroup /></ProtectedRoute>} />
+            <Route path="/group/:groupId" element={<ProtectedRoute><GroupChat /></ProtectedRoute>} />
             <Route path="/create-activity" element={<ProtectedRoute><CreateActivity /></ProtectedRoute>} />
             <Route path="/activity/:id" element={<ProtectedRoute><ActivityDetail /></ProtectedRoute>} />
             <Route path="/voting/:id" element={<ProtectedRoute><Voting /></ProtectedRoute>} />
