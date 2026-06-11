@@ -1,16 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+const supabaseUrl = 'https://rdiyqejysmlwcbwfxwtx.supabase.co'
+const supabaseAnonKey = 'sb_publishable_1jWXp_Gcor-__X_GWF-fhA_1Z_OzHVY'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Mangler Supabase env-variabler:', { supabaseUrl, supabaseAnonKey })
-}
-
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder'
-)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export type Profile = {
   id: string
