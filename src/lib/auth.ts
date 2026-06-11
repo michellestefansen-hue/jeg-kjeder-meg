@@ -10,14 +10,21 @@ export async function registerUser(
   area: string
 ) {
   // 1. Opprett bruker i Supabase Auth
-  const { data, error } = await supabase.auth.signUp({ email, password })
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      // Send ikke bekreftelses-e-post i prototype-modus
+      emailRedirectTo: undefined,
+    },
+  })
   if (error) throw error
 
   const userId = data.user?.id
   if (!userId) throw new Error('Ingen bruker-ID etter registrering')
 
-  // 2. Lagre profil i profiles-tabellen
-  const { error: profileError } = await supabase.from('profiles').insert({
+  // 2. Lagre profil — bruk upsert for å unngå race condition
+  const { error: profileError } = await supabase.from('profiles').upsert({
     id: userId,
     name,
     username: username.toLowerCase(),
@@ -41,25 +48,34 @@ export async function loginUser(email: string, password: string) {
 }
 
 export async function logoutUser() {
-  const { error } = await supabase.auth.signOut()
-  if (error) throw error
+  await supabase.auth.signOut()
 }
 
 export async function sendPasswordReset(email: string) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
+    redirectTo: `${window.location.origin}/login`,
   })
   if (error) throw error
 }
 
-export async function getProfile(userId: string) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single()
-  if (error) throw error
-  return data
+// Hent profil med retry (i tilfelle race condition etter registrering)
+export async function getProfile(userId: string, retries = 3): Promise<Record<string, unknown>> {
+  for (let i = 0; i < retries; i++) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (data) return data
+    if (error && i < retries - 1) {
+      // Vent litt og prøv igjen
+      await new Promise((r) => setTimeout(r, 500))
+    } else if (error) {
+      throw error
+    }
+  }
+  throw new Error('Kunne ikke hente profil')
 }
 
 export async function updateProfile(userId: string, updates: Record<string, unknown>) {

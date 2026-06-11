@@ -1,5 +1,6 @@
 // ─── Registreringsside ────────────────────────────────────────────────────────
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MapPin, X } from 'lucide-react'
 import Button from '../../components/ui/Button'
 import Header from '../../components/layout/Header'
@@ -7,6 +8,7 @@ import { POSTNUMMER } from '../../data/postnummer'
 import { registerUser } from '../../lib/auth'
 
 export default function Register() {
+  const navigate = useNavigate()
 
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
@@ -29,7 +31,7 @@ export default function Register() {
     setError('')
     try {
       await registerUser(email, password, name, username, ageNum, area || 'Oslo')
-      // App.tsx lytter på auth og navigerer automatisk
+      navigate('/home')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Noe gikk galt'
       setError(msg.includes('already') ? 'E-posten er allerede i bruk' : msg)
