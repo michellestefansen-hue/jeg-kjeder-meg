@@ -108,82 +108,11 @@ export const USERS: User[] = [
 
 // ─── Aktiviteter ─────────────────────────────────────────────────────────────
 
-export const ACTIVITIES: Activity[] = [
-  {
-    id: 'a1',
-    title: 'Kino på CC Vest',
-    emoji: '🎬',
-    type: 'closed',
-    location: 'CC Vest, Oslo',
-    address: 'Lilleakerveien 16, Oslo',
-    date: '2026-06-14',
-    time: '15:00',
-    pricePerPerson: 130,
-    travelCost: 40,
-    maxParticipants: 5,
-    participants: ['u1', 'u2', 'u3'],
-    organizerId: 'u1',
-    status: 'voting',
-    allowSuggestions: true,
-    ageRange: [13, 15],
-    distance: 3.2,
-    invitedFriends: ['u2', 'u3', 'u4'],
-    suggestions: [
-      { id: 's1', title: 'Mission Impossible', emoji: '🎬', votes: ['u1', 'u2', 'u3', 'u4', 'u5'], addedBy: 'u1' },
-      { id: 's2', title: 'Inside Out 2', emoji: '😭', votes: ['u2', 'u3'], addedBy: 'u2' },
-      { id: 's3', title: 'Minecraft filmen', emoji: '⛏️', votes: ['u4'], addedBy: 'u3' },
-    ],
-  },
-  {
-    id: 'a2',
-    title: 'Bowling i Vika',
-    emoji: '🎳',
-    type: 'open',
-    location: 'Oslo Mekaniske Verksteder, Oslo',
-    address: 'Vulkan 5, Oslo',
-    date: '2026-06-15',
-    time: '17:00',
-    pricePerPerson: 160,
-    travelCost: 30,
-    maxParticipants: 8,
-    participants: ['u2', 'u4'],
-    organizerId: 'u2',
-    status: 'planning',
-    allowSuggestions: false,
-    ageRange: [13, 15],
-    distance: 1.5,
-    suggestions: [],
-  },
-  {
-    id: 'a3',
-    title: 'Piknik i Frognerparken',
-    emoji: '🧺',
-    type: 'open',
-    location: 'Frognerparken, Oslo',
-    address: 'Frognerparken, Oslo',
-    date: '2026-06-20',
-    time: '13:00',
-    pricePerPerson: 80,
-    travelCost: 20,
-    maxParticipants: 10,
-    participants: ['u1', 'u3', 'u5'],
-    organizerId: 'u3',
-    status: 'confirmed',
-    allowSuggestions: true,
-    ageRange: [13, 15],
-    distance: 2.1,
-    suggestions: [
-      { id: 's4', title: 'Tur i parken', emoji: '🌳', votes: ['u1', 'u3', 'u5'], addedBy: 'u3' },
-      { id: 's5', title: 'Kafé etterpå', emoji: '☕', votes: ['u1', 'u5'], addedBy: 'u1' },
-    ],
-  },
-]
+export const ACTIVITIES: Activity[] = []
 
 // ─── Invitasjoner (innboks) ───────────────────────────────────────────────────
 
-export const INVITATIONS = [
-  { id: 'inv1', activityId: 'a1', fromUserId: 'u2', toUserId: 'u1', message: 'Kom på kino med oss! 🎬' },
-]
+export const INVITATIONS: { id: string; activityId: string; fromUserId: string; toUserId: string; message: string }[] = []
 
 // ─── Chat-meldinger ───────────────────────────────────────────────────────────
 
