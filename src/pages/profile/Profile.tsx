@@ -6,18 +6,6 @@ import Avatar from '../../components/ui/Avatar'
 import BottomNav from '../../components/layout/BottomNav'
 import { USERS } from '../../data/mockData'
 
-const BG_COLORS = [
-  { hex: '#ffffff', label: 'Hvit' },
-  { hex: '#fdf2f8', label: 'Rosa' },
-  { hex: '#f5f3ff', label: 'Lilla' },
-  { hex: '#eff6ff', label: 'Blå' },
-  { hex: '#f0fdf4', label: 'Grønn' },
-  { hex: '#fffbeb', label: 'Gul' },
-  { hex: '#fff1f2', label: 'Rød' },
-  { hex: '#f0f9ff', label: 'Lyseblå' },
-  { hex: '#1a1a2e', label: 'Mørk' },
-  { hex: '#0f172a', label: 'Natt' },
-]
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -74,24 +62,23 @@ export default function Profile() {
         {/* Bakgrunnsfarge */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-3">🎨 Bakgrunnsfarge</h3>
-          <div className="grid grid-cols-5 gap-3">
-            {BG_COLORS.map((c) => (
-              <button
-                key={c.hex}
-                onClick={() => setBgColor(c.hex)}
-                title={c.label}
-                className="flex flex-col items-center gap-1"
-              >
-                <div
-                  className={`w-11 h-11 rounded-2xl border-2 transition-all ${
-                    bgColor === c.hex ? 'border-pink-500 scale-110 shadow-md' : 'border-gray-200'
-                  }`}
-                  style={{ backgroundColor: c.hex }}
-                />
-                <span className="text-[10px] text-gray-400">{c.label}</span>
-              </button>
-            ))}
-          </div>
+          <label className="flex items-center gap-4 cursor-pointer">
+            <div
+              className="w-14 h-14 rounded-2xl border-2 border-gray-200 shadow-sm flex-shrink-0 overflow-hidden relative"
+              style={{ backgroundColor: bgColor }}
+            >
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-800">Velg farge</p>
+              <p className="text-xs text-gray-400 mt-0.5">{bgColor}</p>
+            </div>
+          </label>
         </div>
 
         {/* Innstillinger */}
