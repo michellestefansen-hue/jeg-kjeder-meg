@@ -6,10 +6,19 @@ import { useAppStore } from '../../store/useAppStore'
 import { USERS } from '../../data/mockData'
 import BottomNav from '../../components/layout/BottomNav'
 
-const OSLO_AREAS = [
-  'Grünerløkka', 'Majorstuen', 'Frogner', 'Bislett', 'St. Hanshaugen',
-  'Grønland', 'Tøyen', 'Sagene', 'Vulkan', 'Aker Brygge',
-  'Sentrum', 'Gamle Oslo', 'Løren', 'Sinsen', 'Carl Berner',
+const LOCATIONS = [
+  // Norge
+  'Oslo', 'Bergen', 'Trondheim', 'Stavanger', 'Tromsø',
+  'Kristiansand', 'Drammen', 'Fredrikstad', 'Sandnes', 'Bodø',
+  'Ålesund', 'Haugesund', 'Tønsberg', 'Moss', 'Gjøvik',
+  'Lillehammer', 'Molde', 'Harstad', 'Steinkjer', 'Arendal',
+
+  // Europa
+  'København', 'Stockholm', 'Gøteborg', 'Malmø',
+  'Helsinki', 'Amsterdam', 'Berlin', 'Paris', 'London',
+  'Roma', 'Madrid', 'Barcelona', 'Lisboa', 'Wien',
+  'Praha', 'Budapest', 'Warszawa', 'Dublin', 'Zürich',
+  'Brussel', 'Hamburg', 'München', 'Aten', 'Reykjavik',
 ]
 
 export default function Explore() {
@@ -22,9 +31,9 @@ export default function Explore() {
   const [locationInput, setLocationInput] = useState('')
   const [showLocationSearch, setShowLocationSearch] = useState(false)
 
-  const suggestions = locationInput.length > 0
-    ? OSLO_AREAS.filter((a) => a.toLowerCase().includes(locationInput.toLowerCase()))
-    : OSLO_AREAS
+  const suggestions = LOCATIONS.filter((a) =>
+    locationInput.length === 0 || a.toLowerCase().includes(locationInput.toLowerCase())
+  )
 
   const openActivities = activities.filter(
     (a) =>
@@ -37,7 +46,7 @@ export default function Explore() {
   )
 
   const selectLocation = (area: string) => {
-    setLocation(area + ', Oslo')
+    setLocation(area)
     setLocationInput('')
     setShowLocationSearch(false)
   }
@@ -88,8 +97,8 @@ export default function Explore() {
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-pink-50 transition-colors border-b border-gray-50 last:border-0"
                 >
                   <MapPin size={14} className="text-pink-400 flex-shrink-0" />
-                  <span className="text-sm text-gray-700">{area}, Oslo</span>
-                  {location.includes(area) && (
+                  <span className="text-sm text-gray-700">{area}</span>
+                  {location === area && (
                     <span className="ml-auto text-xs text-pink-500 font-medium">Valgt</span>
                   )}
                 </button>
