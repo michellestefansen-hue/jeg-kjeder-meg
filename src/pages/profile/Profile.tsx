@@ -6,9 +6,22 @@ import Avatar from '../../components/ui/Avatar'
 import BottomNav from '../../components/layout/BottomNav'
 import { USERS } from '../../data/mockData'
 
+const BG_COLORS = [
+  { hex: '#ffffff', label: 'Hvit' },
+  { hex: '#fdf2f8', label: 'Rosa' },
+  { hex: '#f5f3ff', label: 'Lilla' },
+  { hex: '#eff6ff', label: 'Blå' },
+  { hex: '#f0fdf4', label: 'Grønn' },
+  { hex: '#fffbeb', label: 'Gul' },
+  { hex: '#fff1f2', label: 'Rød' },
+  { hex: '#f0f9ff', label: 'Lyseblå' },
+  { hex: '#1a1a2e', label: 'Mørk' },
+  { hex: '#0f172a', label: 'Natt' },
+]
+
 export default function Profile() {
   const navigate = useNavigate()
-  const { currentUser, activities, logout } = useAppStore()
+  const { currentUser, activities, logout, bgColor, setBgColor } = useAppStore()
   if (!currentUser) { navigate('/'); return null }
 
   const myActivities = activities.filter((a) => a.participants.includes(currentUser.id))
@@ -54,6 +67,29 @@ export default function Profile() {
                 </div>
                 <span className="text-xs text-gray-300">→</span>
               </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bakgrunnsfarge */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <h3 className="font-semibold text-gray-800 mb-3">🎨 Bakgrunnsfarge</h3>
+          <div className="grid grid-cols-5 gap-3">
+            {BG_COLORS.map((c) => (
+              <button
+                key={c.hex}
+                onClick={() => setBgColor(c.hex)}
+                title={c.label}
+                className="flex flex-col items-center gap-1"
+              >
+                <div
+                  className={`w-11 h-11 rounded-2xl border-2 transition-all ${
+                    bgColor === c.hex ? 'border-pink-500 scale-110 shadow-md' : 'border-gray-200'
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                />
+                <span className="text-[10px] text-gray-400">{c.label}</span>
+              </button>
             ))}
           </div>
         </div>

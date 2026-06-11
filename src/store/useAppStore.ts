@@ -35,6 +35,10 @@ interface AppState {
   // Navigasjon
   activeActivityId: string | null
   setActiveActivity: (id: string | null) => void
+
+  // Tema
+  bgColor: string
+  setBgColor: (color: string) => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -173,4 +177,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   // ─── Navigasjon ───────────────────────────────────────────────────────────
   activeActivityId: null,
   setActiveActivity: (id) => set({ activeActivityId: id }),
+
+  // ─── Tema ─────────────────────────────────────────────────────────────────
+  bgColor: '#ffffff',
+  setBgColor: (color) => set({ bgColor: color }),
 }))

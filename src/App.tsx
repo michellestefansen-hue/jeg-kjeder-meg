@@ -41,10 +41,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const bgColor = useAppStore((s) => s.bgColor)
   return (
     // Mobil-wrapper: maks 430px, sentrert
     <div className="min-h-dvh bg-gray-100 flex justify-center">
-      <div className="w-full max-w-[430px] bg-white min-h-dvh relative overflow-hidden shadow-2xl">
+      <div className="w-full max-w-[430px] min-h-dvh relative overflow-hidden shadow-2xl" style={{ backgroundColor: bgColor }}>
         <BrowserRouter>
           <Routes>
             {/* Public */}
