@@ -34,6 +34,7 @@ import Profile from './pages/profile/Profile'
 import EditProfile from './pages/profile/EditProfile'
 import UserProfile from './pages/profile/UserProfile'
 import Privacy from './pages/profile/Privacy'
+import Help from './pages/profile/Help'
 import AddFriends from './pages/profile/AddFriends'
 import FriendRequests from './pages/profile/FriendRequests'
 import Messages from './pages/chat/Messages'
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
             <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
+            <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
             <Route path="/add-friends" element={<ProtectedRoute><AddFriends /></ProtectedRoute>} />
             <Route path="/friend-requests" element={<ProtectedRoute><FriendRequests /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />

@@ -112,7 +112,7 @@ export default function Profile() {
           {[
             { label: 'Rediger profil', emoji: '✏️', path: '/edit-profile' },
             { label: 'Personvern', emoji: '🔒', path: '/privacy' },
-            { label: 'Hjelp', emoji: '❓', path: null },
+            { label: 'Hjelp', emoji: '❓', path: '/help' },
           ].map(({ label, emoji, path }) => (
             <button
               key={label}
