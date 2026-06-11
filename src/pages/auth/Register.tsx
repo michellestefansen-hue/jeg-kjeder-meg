@@ -6,9 +6,11 @@ import Button from '../../components/ui/Button'
 import Header from '../../components/layout/Header'
 import { POSTNUMMER } from '../../data/postnummer'
 import { registerUser } from '../../lib/auth'
+import { useAppStore } from '../../store/useAppStore'
 
 export default function Register() {
   const navigate = useNavigate()
+  const login = useAppStore((s) => s.login)
 
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
@@ -30,7 +32,19 @@ export default function Register() {
     setLoading(true)
     setError('')
     try {
-      await registerUser(email, password, name, username, ageNum, area || 'Oslo')
+      const user = await registerUser(email, password, name, username, ageNum, area || 'Oslo')
+      if (user) {
+        // Sett bruker i store direkte så ProtectedRoute lar oss gjennom
+        login({
+          id: user.id,
+          name,
+          username: username.toLowerCase(),
+          age: ageNum,
+          area: area || 'Oslo',
+          avatar: name[0].toUpperCase(),
+          friends: [],
+        })
+      }
       navigate('/home')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Noe gikk galt'
