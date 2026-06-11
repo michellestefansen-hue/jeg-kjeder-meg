@@ -1,15 +1,10 @@
 // ─── Innloggingsside med Supabase ─────────────────────────────────────────────
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import Header from '../../components/layout/Header'
-import { loginUser, getProfile, sendPasswordReset } from '../../lib/auth'
-import { useAppStore } from '../../store/useAppStore'
+import { loginUser, sendPasswordReset } from '../../lib/auth'
 
 export default function Login() {
-  const navigate = useNavigate()
-  const login = useAppStore((s) => s.login)
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -26,22 +21,8 @@ export default function Login() {
     setLoading(true)
     setError('')
     try {
-      const user = await loginUser(emailVal, passwordVal)
-      if (user) {
-        const profile = await getProfile(user.id)
-        login({
-          id: user.id,
-          name: profile.name,
-          username: profile.username,
-          age: profile.age,
-          area: profile.area,
-          avatar: profile.name[0].toUpperCase(),
-          friends: profile.friends ?? [],
-          photoUrl: profile.photo_url,
-          vippsNumber: profile.vipps_number,
-        })
-        window.location.href = '/home'
-      }
+      await loginUser(emailVal, passwordVal)
+      // App.tsx sin onAuthStateChange håndterer navigering automatisk
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       setError(msg)

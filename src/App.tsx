@@ -101,7 +101,11 @@ export default function App() {
             photoUrl: profile.photo_url,
             vippsNumber: profile.vipps_number,
           })
-        } catch { /* profil ikke klar ennå */ }
+          // Naviger til hjem etter innlogging
+          if (window.location.pathname === '/login' || window.location.pathname === '/register' || window.location.pathname === '/') {
+            window.location.href = '/home'
+          }
+        } catch (e) { console.error('Profil-feil:', e) }
       }
       if (event === 'SIGNED_OUT') logout()
     })
