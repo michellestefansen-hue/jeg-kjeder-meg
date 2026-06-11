@@ -22,7 +22,7 @@ export default function Welcome() {
           {[
             ['🗺️', 'Finn aktiviteter i nærheten'],
             ['👯', 'Planlegg med vennene dine'],
-            ['🎡', 'La hjulet bestemme'],
+            ['🗳️', 'Stem på hva dere vil gjøre'],
           ].map(([emoji, text]) => (
             <div key={text} className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3 shadow-sm">
               <span className="text-2xl">{emoji}</span>

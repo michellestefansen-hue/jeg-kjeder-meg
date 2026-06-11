@@ -123,9 +123,10 @@ export default function Voting() {
 
       {/* Spin the Wheel-knapp */}
       {activity.suggestions.length >= 2 && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-md mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-md mx-auto space-y-1">
+          <p className="text-xs text-center text-gray-400">Uavgjort? La hjulet avgjøre 👇</p>
           <Button variant="primary" fullWidth size="lg" onClick={() => navigate(`/spin/${activity.id}`)}>
-            🎡 Spin the Wheel!
+            🎡 Spin the Wheel
           </Button>
         </div>
       )}

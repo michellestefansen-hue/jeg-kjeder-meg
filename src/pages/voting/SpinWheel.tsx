@@ -125,7 +125,8 @@ export default function SpinWheel() {
 
       <div className="flex-1 flex flex-col items-center justify-center px-4 gap-6">
         <p className="text-gray-500 text-sm text-center">
-          Aktiviteter med flere stemmer har større sjanse! 🍀
+          Brukes når dere ikke kommer til enighet 🤝<br/>
+          <span className="text-xs text-gray-400">Alternativer med flere stemmer har større sjanse</span>
         </p>
 
         {/* Hjul + pil */}
