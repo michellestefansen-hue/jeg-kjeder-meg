@@ -12,7 +12,7 @@ import { nb } from 'date-fns/locale'
 export default function ActivityDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { currentUser, activities, payments } = useAppStore()
+  const { currentUser, activities, payments, vennekasse } = useAppStore()
 
   const activity = activities.find((a) => a.id === id)
   if (!activity || !currentUser) return null
@@ -32,6 +32,7 @@ export default function ActivityDetail() {
   const collectedAmount = activityPayments.filter((p) => p.paid).reduce((sum, p) => sum + p.amount, 0)
   const goalAmount = totalPrice * totalParticipants
   const organizer = USERS.find((u) => u.id === activity.organizerId)
+  const vennekasseSaldo = vennekasse[activity.id] ?? 0
 
   return (
     <div className="min-h-dvh pb-32">
@@ -137,6 +138,32 @@ export default function ActivityDetail() {
             )}
           </div>
         )}
+
+        {/* Vennekasse */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🫙</span>
+              <h3 className="font-semibold text-gray-900 text-sm">Vennekasse</h3>
+            </div>
+            <span className="text-lg font-black text-pink-500">{vennekasseSaldo} kr</span>
+          </div>
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Penger fra avbestillinger samles her. Brukes til å gjøre denne eller neste aktivitet billigere for alle. 🎉
+          </p>
+          {vennekasseSaldo > 0 ? (
+            <div className="bg-pink-50 rounded-xl px-3 py-2 flex items-center gap-2">
+              <span className="text-pink-400 text-sm">✨</span>
+              <span className="text-xs text-pink-700 font-medium">
+                {vennekasseSaldo} kr spart — {Math.round(vennekasseSaldo / Math.max(activity.participants.length, 1))} kr per person!
+              </span>
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-xl px-3 py-2">
+              <span className="text-xs text-gray-400">Ingen penger ennå — fyller seg opp ved avbestillinger</span>
+            </div>
+          )}
+        </div>
 
         {/* Reiserute-knapp */}
         {(activity.distance ?? 0) > 1 && (

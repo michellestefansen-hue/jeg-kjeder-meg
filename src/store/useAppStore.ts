@@ -46,6 +46,10 @@ interface AppState {
   activeActivityId: string | null
   setActiveActivity: (id: string | null) => void
 
+  // Vennekasse
+  vennekasse: Record<string, number>   // activityId → saldo i kr
+  addToVennekasse: (activityId: string, amount: number) => void
+
   // Blokkering
   blockedUsers: string[]
   blockUser: (userId: string) => void
@@ -255,6 +259,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   // ─── Navigasjon ───────────────────────────────────────────────────────────
   activeActivityId: null,
   setActiveActivity: (id) => set({ activeActivityId: id }),
+
+  // ─── Vennekasse ───────────────────────────────────────────────────────────
+  vennekasse: { a1: 85, a3: 50 }, // mock: litt penger fra avbestillinger
+  addToVennekasse: (activityId, amount) =>
+    set((s) => ({ vennekasse: { ...s.vennekasse, [activityId]: (s.vennekasse[activityId] ?? 0) + amount } })),
 
   // ─── Blokkering ───────────────────────────────────────────────────────────
   blockedUsers: [],
