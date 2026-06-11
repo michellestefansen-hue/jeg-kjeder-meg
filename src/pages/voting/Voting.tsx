@@ -32,7 +32,7 @@ export default function Voting() {
   const sortedSuggestions = [...activity.suggestions].sort((a, b) => b.votes.length - a.votes.length)
 
   return (
-    <div className="min-h-dvh bg-gray-50 pb-32">
+    <div className="min-h-dvh pb-32">
       <Header title="Forslag & avstemming" />
 
       <div className="px-4 py-5 space-y-4">

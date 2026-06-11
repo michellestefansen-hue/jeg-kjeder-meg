@@ -32,7 +32,7 @@ export default function UserProfile() {
   const userFriends = USERS.filter((u) => user.friends.includes(u.id))
 
   return (
-    <div className="min-h-dvh bg-gray-50 pb-10">
+    <div className="min-h-dvh pb-10">
       <Header title={user.name} />
 
       {/* Hero */}

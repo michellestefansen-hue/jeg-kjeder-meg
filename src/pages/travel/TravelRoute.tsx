@@ -64,7 +64,7 @@ export default function TravelRoute() {
   const lineColor = transportColor[selected.type] ?? '#6366F1'
 
   return (
-    <div className="min-h-dvh bg-gray-50 pb-10">
+    <div className="min-h-dvh pb-10">
       <Header title="Reiserute" />
 
       {/* ─── Kart ─── */}

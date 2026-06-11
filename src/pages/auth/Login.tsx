@@ -19,7 +19,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-white">
+    <div className="min-h-dvh flex flex-col">
       <Header title="Logg inn" />
       <div className="flex-1 p-6 flex flex-col gap-6 justify-center">
         <div className="text-center">

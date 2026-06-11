@@ -27,7 +27,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-white">
+    <div className="min-h-dvh flex flex-col">
       <Header title="Opprett konto" showBack={step === 1} />
 
       {/* Fremdriftsindikator */}

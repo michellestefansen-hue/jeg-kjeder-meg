@@ -76,7 +76,7 @@ export default function EditProfile() {
     : []
 
   return (
-    <div className="min-h-dvh bg-white flex flex-col">
+    <div className="min-h-dvh flex flex-col">
       <Header title="Rediger profil" />
 
       <div className="flex-1 p-5 space-y-6">

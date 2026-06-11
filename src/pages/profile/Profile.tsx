@@ -29,7 +29,7 @@ export default function Profile() {
   const friends = USERS.filter((u) => currentUser.friends.includes(u.id))
 
   return (
-    <div className="min-h-dvh bg-gray-50 pb-24">
+    <div className="min-h-dvh pb-24">
       {/* Header */}
       <div className="bg-gradient-to-br from-pink-400 to-purple-500 px-4 pt-12 pb-8 text-white">
         <div className="flex items-center gap-4">

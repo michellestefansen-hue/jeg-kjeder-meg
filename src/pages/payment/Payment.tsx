@@ -30,7 +30,7 @@ export default function Payment() {
   }
 
   return (
-    <div className="min-h-dvh bg-white flex flex-col">
+    <div className="min-h-dvh flex flex-col">
       {step !== 'success' && step !== 'vipps-open' && step !== 'vipps-confirm' && step !== 'processing' && (
         <Header title="Bli med" />
       )}

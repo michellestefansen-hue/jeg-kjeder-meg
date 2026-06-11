@@ -31,7 +31,7 @@ export default function ActivityDetail() {
   const totalParticipants = activity.participants.length
 
   return (
-    <div className="min-h-dvh bg-gray-50 pb-32">
+    <div className="min-h-dvh pb-32">
       <Header title={activity.title} />
 
       {/* Hero */}

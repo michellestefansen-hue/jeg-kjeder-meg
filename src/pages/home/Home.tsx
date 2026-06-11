@@ -42,7 +42,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-dvh bg-gray-50 pb-24">
+    <div className="min-h-dvh pb-24">
       {/* Header */}
       <div className="bg-white px-4 pt-12 pb-5 sticky top-0 z-40 shadow-sm">
         <div className="flex items-center justify-between">

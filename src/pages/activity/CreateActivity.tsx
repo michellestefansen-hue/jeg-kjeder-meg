@@ -108,7 +108,7 @@ export default function CreateActivity() {
   }
 
   return (
-    <div className="min-h-dvh bg-white flex flex-col">
+    <div className="min-h-dvh flex flex-col">
       <Header title="Ny aktivitet" />
 
       {/* Fremdrift */}

@@ -168,7 +168,7 @@ export default function Explore() {
   ) : []
 
   return (
-    <div className="min-h-dvh bg-gray-50 pb-24">
+    <div className="min-h-dvh pb-24">
       {/* Header */}
       <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-40 shadow-sm space-y-3">
         <h1 className="text-xl font-bold text-gray-900">Utforsk 🗺️</h1>
