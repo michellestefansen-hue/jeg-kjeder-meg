@@ -45,7 +45,7 @@ export default function Register() {
           friends: [],
         })
       }
-      navigate('/home')
+      window.location.href = '/home'
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Noe gikk galt'
       setError(msg.includes('already') ? 'E-posten er allerede i bruk' : msg)

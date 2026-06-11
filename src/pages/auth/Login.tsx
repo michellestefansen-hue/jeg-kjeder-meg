@@ -40,7 +40,7 @@ export default function Login() {
           photoUrl: profile.photo_url,
           vippsNumber: profile.vipps_number,
         })
-        navigate('/home')
+        window.location.href = '/home'
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
