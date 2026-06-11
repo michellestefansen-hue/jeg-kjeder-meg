@@ -22,7 +22,7 @@ export default function Login() {
     setError('')
     try {
       await loginUser(emailVal, passwordVal)
-      // App.tsx sin onAuthStateChange håndterer navigering automatisk
+      window.location.replace('/home')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       setError(msg)
